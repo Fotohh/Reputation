@@ -1,0 +1,6 @@
+name: Reputation
+version: '${project.version}'
+main: me.xaxis.reputation.Reputation
+api-version: 1.19
+authors: [Xaxis]
+website: github.com/XaxisPlayz

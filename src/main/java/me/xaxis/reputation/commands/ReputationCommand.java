@@ -40,6 +40,26 @@ public class ReputationCommand implements CommandExecutor {
 
             //TODO add functionality
 
+        }else if(args.length == 2){
+
+            Player target = Bukkit.getPlayer(args[0]);
+
+            if(target == null || !target.isOnline()){
+                player.sendMessage("That player is invalid!");
+                return true;
+            }
+
+            switch (args[1]){
+                case "like" ->{
+                    //TODO add functionality | increase or decrease by configurable amount
+                }
+                case "dislike" ->{
+
+                }
+            }
+
+        }else{
+            player.sendMessage("Invalid usage!");
         }
 
 

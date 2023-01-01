@@ -61,8 +61,7 @@ public class SqliteUtility {
                       "CREATE TABLE IF NOT EXISTS reputation ("
                     + " uuid text PRIMARY KEY,"
                     + " likes INT NOT NULL,"
-                    + " dislikes INT NOT NULL,"
-                    + " unique (uuid)"
+                    + " dislikes INT NOT NULL"
                     + ");";
             try{
                 Statement stmt = connection.createStatement();
@@ -74,7 +73,7 @@ public class SqliteUtility {
     }
 
     public void createPlayerReputationEntry(UUID uuid){
-        String sql = "INSERT INTO reputation(uuid, likes, dislikes) VALUES(?,?,?) ON DUPLICATE KEY UPDATE likes = likes + ?; dislikes = dislikes + ?;";
+        String sql = "INSERT INTO reputation(uuid, likes, dislikes) VALUES(?,?,?)";
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
@@ -113,8 +112,8 @@ public class SqliteUtility {
                         "UPDATE dislikes SET dislikes = ? WHERE uuid = ?"
                 );
 
-                stmt.setInt(3, amt);
                 stmt.setString(1, player.getUniqueId().toString());
+                stmt.setInt(2, amt);
                 stmt.execute();
             } catch (SQLException e) {
                 throw new RuntimeException(e);

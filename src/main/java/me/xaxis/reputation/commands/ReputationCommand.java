@@ -29,6 +29,20 @@ public class ReputationCommand implements CommandExecutor {
 
         if(args.length == 0){
             //TODO This will be a help cmd
+
+            //testing
+            if(plugin.getSqliteUtility() == null) {
+                player.sendMessage("SQLite is null");
+                return true;
+            }
+
+            plugin.getSqliteUtility().createPlayerReputationEntry(player.getUniqueId());
+            plugin.getSqliteUtility().setDislikes(player, 7);
+            plugin.getSqliteUtility().setLikes(player, 20);
+            plugin.getSqliteUtility().getLikes(player);
+            plugin.getSqliteUtility().getDislikes(player);
+            System.out.println("interesting");
+
         }else if(args.length == 1){
 
             Player target = Bukkit.getPlayer(args[0]);

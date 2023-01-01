@@ -8,6 +8,7 @@ import java.io.File;
 import java.sql.*;
 import java.util.UUID;
 
+@SuppressWarnings("all")
 public class SqliteUtility {
 
     private static String URL;
@@ -66,6 +67,7 @@ public class SqliteUtility {
             try{
                 Statement stmt = connection.createStatement();
                 stmt.execute(sql);
+                stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -100,11 +102,51 @@ public class SqliteUtility {
                 stmt.setInt(2, amt);
                 stmt.setString(1, player.getUniqueId().toString());
                 stmt.execute();
+                stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         });
     }
+
+    public int getLikes(Player player){
+
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
+            try{
+                PreparedStatement stmt = connection.prepareStatement(
+                        "SELECT likes from reputation where uuid = ?"
+                );
+                stmt.setString(1, player.getUniqueId().toString());
+                ResultSet resultSet = stmt.executeQuery();
+                System.out.println(resultSet.toString());
+                stmt.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return 0;
+    }
+
+    public int getDislikes(Player player){
+
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
+            try{
+                PreparedStatement stmt = connection.prepareStatement(
+                        "SELECT dislikes from reputation where uuid = ?"
+                );
+                stmt.setString(1, player.getUniqueId().toString());
+                ResultSet resultSet = stmt.executeQuery();
+                System.out.println(resultSet.toString());
+                stmt.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return 0;
+    }
+
     public void setDislikes(Player player, int amt){
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
@@ -115,6 +157,7 @@ public class SqliteUtility {
                 stmt.setString(1, player.getUniqueId().toString());
                 stmt.setInt(2, amt);
                 stmt.execute();
+                stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -132,6 +175,8 @@ public class SqliteUtility {
                 if(connection != null){
                     meta = connection.getMetaData();
                 }
+                System.out.println(meta.getURL().toString());
+                System.out.println(meta.getConnection().toString());
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

@@ -1,6 +1,7 @@
 package me.xaxis.reputation.handle;
 
 import me.xaxis.reputation.Reputation;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
@@ -59,10 +60,10 @@ public class SqliteUtility {
             String sql =
                       "CREATE TABLE IF NOT EXISTS reputation ("
                     + " uuid text PRIMARY KEY,"
-                    + " likes integer NOT NULL,"
-                    + " dislikes integer NOT NULL,"
-                    + " capacity real"
-                    +");";
+                    + " likes INT NOT NULL,"
+                    + " dislikes INT NOT NULL,"
+                    + " unique (uuid)"
+                    + ");";
             try{
                 Statement stmt = connection.createStatement();
                 stmt.execute(sql);
@@ -73,7 +74,7 @@ public class SqliteUtility {
     }
 
     public void createPlayerReputationEntry(UUID uuid){
-        String sql = "INSERT INTO reputation(uuid, likes, dislikes) VALUES(?,?,?)";
+        String sql = "INSERT INTO reputation(uuid, likes, dislikes) VALUES(?,?,?) ON DUPLICATE KEY UPDATE likes = likes + ?; dislikes = dislikes + ?;";
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
@@ -81,7 +82,8 @@ public class SqliteUtility {
                 pstmt.setString(1, uuid.toString());
                 pstmt.setInt(2, 0);
                 pstmt.setInt(3, 0);
-                pstmt.executeUpdate();
+                pstmt.execute();
+                pstmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -89,7 +91,36 @@ public class SqliteUtility {
 
     }
 
+    public void setLikes(Player player, int amt){
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
+            try{
+                PreparedStatement stmt = connection.prepareStatement(
+                        "UPDATE likes SET likes = ? WHERE uuid = ?"
+                );
 
+                stmt.setInt(2, amt);
+                stmt.setString(1, player.getUniqueId().toString());
+                stmt.execute();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+    public void setDislikes(Player player, int amt){
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
+            try{
+                PreparedStatement stmt = connection.prepareStatement(
+                        "UPDATE dislikes SET dislikes = ? WHERE uuid = ?"
+                );
+
+                stmt.setInt(3, amt);
+                stmt.setString(1, player.getUniqueId().toString());
+                stmt.execute();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
 
     private void create(){
         File file = new File(PATH);

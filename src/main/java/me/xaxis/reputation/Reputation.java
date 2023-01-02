@@ -2,9 +2,11 @@ package me.xaxis.reputation;
 
 import me.xaxis.reputation.commands.ReputationCommand;
 import me.xaxis.reputation.handle.SqliteUtility;
+import me.xaxis.reputation.papi.PapiUtility;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
+import java.util.logging.Level;
 
 public final class Reputation extends JavaPlugin {
 
@@ -23,13 +25,14 @@ public final class Reputation extends JavaPlugin {
         sqliteUtility = new SqliteUtility(this);
 
         if(getServer().getPluginManager().getPlugin("PlaceHolderAPI") == null){
-                System.out.println("PlaceholderAPI does not exist!");
+                getLogger().log(Level.SEVERE,"PlaceholderAPI does not exist!");
                 getPluginLoader().disablePlugin(this);
         }
 
         saveDefaultConfig();
 
         new ReputationCommand(this);
+        new PapiUtility(this).register();
     }
 
 

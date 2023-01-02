@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 @SuppressWarnings("all")
@@ -101,14 +103,16 @@ public class SqliteUtility {
     }
 
     public void createPlayerReputationEntry(UUID uuid){
-        String sql = "INSERT INTO reputation(uuid, likes, dislikes) VALUES(?,?,?)";
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
-                PreparedStatement pstmt = connection.prepareStatement(sql);
+                PreparedStatement pstmt = connection.prepareStatement(
+                        "INSERT INTO reputation(uuid, likes, dislikes) VALUES(?,?,?) on conflict do update set likes = likes + ? and dislikes = dislikes + ?;");
                 pstmt.setString(1, uuid.toString());
                 pstmt.setInt(2, 0);
                 pstmt.setInt(3, 0);
+                pstmt.setInt(4, 0);
+                pstmt.setInt(5, 0);
                 pstmt.execute();
                 pstmt.close();
             } catch (SQLException e) {
@@ -118,15 +122,47 @@ public class SqliteUtility {
 
     }
 
+    public boolean entryExists(UUID uuid){
+
+        AtomicBoolean bool = new AtomicBoolean(false);
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
+            try{
+                PreparedStatement stmt = connection.prepareStatement(
+                        "SELECT EXISTS(select * from reputation where uuid = ?;)"
+                );
+                ResultSet rs = stmt.executeQuery();
+                if(isFilled(rs)){
+                    bool.set(true);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return bool.get();
+    }
+
+    public boolean isFilled(ResultSet rs){
+        boolean isEmpty = true;
+        try{
+            while(rs.next()){
+                isEmpty = false;
+            }
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return !isEmpty;
+    }
+
     public void setLikes(Player player, int amt){
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "UPDATE likes SET likes = ? WHERE uuid = ?"
+                        "UPDATE reputation SET likes = ? WHERE uuid = ?"
                 );
 
-                stmt.setInt(2, amt);
-                stmt.setString(1, player.getUniqueId().toString());
+                stmt.setInt(1, amt);
+                stmt.setString(2, player.getUniqueId().toString());
                 stmt.execute();
                 stmt.close();
             } catch (SQLException e) {
@@ -137,6 +173,8 @@ public class SqliteUtility {
 
     public int getLikes(Player player){
 
+        AtomicInteger likes = new AtomicInteger();
+
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
@@ -144,17 +182,19 @@ public class SqliteUtility {
                 );
                 stmt.setString(1, player.getUniqueId().toString());
                 ResultSet resultSet = stmt.executeQuery();
-                plugin.getLogger().log(Level.INFO, resultSet.toString());
+                likes.set(resultSet.getInt("likes"));
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        return 0;
+        return likes.get();
     }
 
     public int getDislikes(Player player){
+
+        AtomicInteger dislikes = new AtomicInteger();
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
@@ -163,25 +203,25 @@ public class SqliteUtility {
                 );
                 stmt.setString(1, player.getUniqueId().toString());
                 ResultSet resultSet = stmt.executeQuery();
-                plugin.getLogger().log(Level.INFO,resultSet.toString());
+                dislikes.set(resultSet.getInt("dislikes"));
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        return 0;
+        return dislikes.get();
     }
 
     public void setDislikes(Player player, int amt){
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "UPDATE dislikes SET dislikes = ? WHERE uuid = ?"
+                        "UPDATE reputation SET dislikes = ? WHERE uuid = ?"
                 );
 
-                stmt.setString(1, player.getUniqueId().toString());
-                stmt.setInt(2, amt);
+                stmt.setString(2, player.getUniqueId().toString());
+                stmt.setInt(1, amt);
                 stmt.execute();
                 stmt.close();
             } catch (SQLException e) {

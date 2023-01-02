@@ -1,2 +1,7 @@
+like_amt: 1
+dislike_amt: 1
+thresholds:
+    #can add your own
+    200: 'light_green'
 Lang:
     SENDER_NOT_PLAYER: '&4You must be a player to execute this command!'

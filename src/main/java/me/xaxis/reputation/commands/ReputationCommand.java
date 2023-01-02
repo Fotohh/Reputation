@@ -9,6 +9,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.logging.Level;
+
 public class ReputationCommand implements CommandExecutor {
 
     private final Reputation plugin;
@@ -20,6 +22,12 @@ public class ReputationCommand implements CommandExecutor {
 
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
+        if(plugin.getSqliteUtility() == null){
+            sender.getServer().getLogger().log(Level.SEVERE, "SQLite is null! Contact developers about this error! Disabling plugin...");
+            sender.getServer().getPluginManager().disablePlugin(plugin);
+            return true;
+        }
+
         if(!(sender instanceof Player)){
             sender.sendMessage(Lang.SENDER_NOT_PLAYER.getMsg(plugin));
             return true;
@@ -30,19 +38,6 @@ public class ReputationCommand implements CommandExecutor {
         if(args.length == 0){
             //TODO This will be a help cmd
 
-            //testing
-            if(plugin.getSqliteUtility() == null) {
-                player.sendMessage("SQLite is null");
-                return true;
-            }
-
-            plugin.getSqliteUtility().createPlayerReputationEntry(player.getUniqueId());
-            plugin.getSqliteUtility().setDislikes(player, 7);
-            plugin.getSqliteUtility().setLikes(player, 20);
-            plugin.getSqliteUtility().getLikes(player);
-            plugin.getSqliteUtility().getDislikes(player);
-            System.out.println("interesting");
-
         }else if(args.length == 1){
 
             Player target = Bukkit.getPlayer(args[0]);
@@ -52,7 +47,9 @@ public class ReputationCommand implements CommandExecutor {
                 return true;
             }
 
-            //TODO add functionality
+            //ChiboYen's total reputation is X (Y likes | Z dislikes)
+
+            player.sendMessage("");
 
         }else if(args.length == 2){
 
@@ -65,17 +62,57 @@ public class ReputationCommand implements CommandExecutor {
 
             switch (args[1]){
                 case "like" ->{
-                    //TODO add functionality | increase or decrease by configurable amount
+                    if(!plugin.getSqliteUtility().entryExists(target.getUniqueId())){
+                        plugin.getSqliteUtility().createPlayerReputationEntry(target.getUniqueId());
+                    }
+                    plugin.getSqliteUtility().setLikes(target, plugin.getConfig().getInt("like_amt") + plugin.getSqliteUtility().getLikes(target));
+                    player.sendMessage("You have liked this player!");
                 }
                 case "dislike" ->{
-
+                    if(!plugin.getSqliteUtility().entryExists(target.getUniqueId())){
+                        plugin.getSqliteUtility().createPlayerReputationEntry(target.getUniqueId());
+                    }
+                    plugin.getSqliteUtility().setLikes(target, plugin.getConfig().getInt("dislike_amt") + plugin.getSqliteUtility().getDislikes(target));
+                    player.sendMessage("You have disliked this player!");
                 }
             }
 
-        }else{
+        } else if (args.length == 4 && args[1].equalsIgnoreCase("set")) {
+            Player target = Bukkit.getPlayer(args[0]);
+
+            //reputation player set likes 10 | 4 arguments
+
+            if(target == null || !target.isOnline()){
+                player.sendMessage("That player is invalid!");
+                return true;
+            }
+
+            if(!plugin.getSqliteUtility().entryExists(target.getUniqueId())){
+                plugin.getSqliteUtility().createPlayerReputationEntry(target.getUniqueId());
+            }
+
+            int amount = 0;
+
+            try{
+                amount = Integer.parseInt(args[3]);
+            }catch (Exception e){
+                player.sendMessage("argument must be an integer!");
+            }
+
+            switch (args[2]){
+                case "likes"->{
+                    plugin.getSqliteUtility().setLikes(target, amount);
+                    player.sendMessage("Successfully set their likes");
+                }
+                case "dislikes"->{
+                    plugin.getSqliteUtility().setDislikes(target, amount);
+                    player.sendMessage("Successfully set their dislikes");
+                }
+            }
+
+        } else{
             player.sendMessage("Invalid usage!");
         }
-
 
         return true;
     }

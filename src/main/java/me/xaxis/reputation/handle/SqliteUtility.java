@@ -5,27 +5,55 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.*;
 import java.util.UUID;
+import java.util.logging.Level;
 
 @SuppressWarnings("all")
 public class SqliteUtility {
 
     private static String URL;
     private static String PATH;
+    private static String FOLDER;
     private final Plugin plugin;
     private Connection connection;
     private DatabaseMetaData meta;
 
     public SqliteUtility(Reputation plugin){
+
         this.plugin = plugin;
+
         if(!plugin.getDataFolder().exists()) plugin.getDataFolder().mkdirs();
-        URL = "jdbc:sqlite:" + plugin.getDataFolder() + "/Data/reputation.db";
+
+        URL = "jdbc:sqlite:" + plugin.getDataFolder() + "\\Data\\reputation.db";
         PATH = plugin.getDataFolder() + "/Data/reputation.db";
-        try {
+        FOLDER = plugin.getDataFolder() + "/Data/";
+
+        if(!plugin.getDataFolder().exists()){
+
+            plugin.getDataFolder().mkdirs();
+
+        }
+
+        File folder = new File(FOLDER);
+
+        if(!folder.exists()){
+
+            folder.mkdirs();
+
+        }
+
+        File file = new File(PATH);
+
+        if(file.exists()){
+
             connect();
-        }catch (Exception ignored){
+
+        }else{
+
             create();
+
         }
         createTable();
     }
@@ -36,7 +64,7 @@ public class SqliteUtility {
             try{
                 connection = DriverManager.getConnection(URL);
                 this.connection = connection;
-                meta = connection.getMetaData();
+                this.meta = connection.getMetaData();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -44,20 +72,18 @@ public class SqliteUtility {
         });
     }
 
-    public void disconnect(){
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
-            try {
-                if(connection != null) {
-                    connection.close();
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+    public void disconnect() {
+        try {
+            if (connection != null) {
+                connection.close();
             }
-        });
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void createTable(){
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
+        plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, ()->{
             String sql =
                       "CREATE TABLE IF NOT EXISTS reputation ("
                     + " uuid text PRIMARY KEY,"
@@ -71,7 +97,7 @@ public class SqliteUtility {
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-        });
+        }, 5);
     }
 
     public void createPlayerReputationEntry(UUID uuid){
@@ -118,7 +144,7 @@ public class SqliteUtility {
                 );
                 stmt.setString(1, player.getUniqueId().toString());
                 ResultSet resultSet = stmt.executeQuery();
-                System.out.println(resultSet.toString());
+                plugin.getLogger().log(Level.INFO, resultSet.toString());
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -137,7 +163,7 @@ public class SqliteUtility {
                 );
                 stmt.setString(1, player.getUniqueId().toString());
                 ResultSet resultSet = stmt.executeQuery();
-                System.out.println(resultSet.toString());
+                plugin.getLogger().log(Level.INFO,resultSet.toString());
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -164,19 +190,26 @@ public class SqliteUtility {
         });
     }
 
-    private void create(){
+    private void create() {
+
         File file = new File(PATH);
         if(file.exists()) return;
+
+        try {
+            file.createNewFile();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()-> {
 
             try {
-                connection = DriverManager.getConnection(URL);
+                this.connection = DriverManager.getConnection(URL);
                 if(connection != null){
-                    meta = connection.getMetaData();
+                    this.meta = connection.getMetaData();
                 }
-                System.out.println(meta.getURL().toString());
-                System.out.println(meta.getConnection().toString());
+                plugin.getLogger().log(Level.INFO,meta.getURL().toString());
+                plugin.getLogger().log(Level.INFO,meta.getConnection().toString());
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }

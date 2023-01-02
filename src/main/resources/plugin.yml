@@ -5,3 +5,5 @@ api-version: 1.19
 authors: [Xaxis]
 website: github.com/XaxisPlayz
 soft-depend: [PlaceholderAPI]
+commands:
+    reputation:

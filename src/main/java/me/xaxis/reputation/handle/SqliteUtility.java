@@ -12,12 +12,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
-@SuppressWarnings("all")
 public class SqliteUtility {
 
     private static String URL;
     private static String PATH;
-    private static String FOLDER;
     private final Plugin plugin;
     private Connection connection;
     private DatabaseMetaData meta;
@@ -28,9 +26,9 @@ public class SqliteUtility {
 
         if(!plugin.getDataFolder().exists()) plugin.getDataFolder().mkdirs();
 
-        URL = "jdbc:sqlite:" + plugin.getDataFolder() + "\\Data\\reputation.db";
+        URL = "jdbc:sqlite:" + plugin.getDataFolder() + "/Data/reputation.db";
         PATH = plugin.getDataFolder() + "/Data/reputation.db";
-        FOLDER = plugin.getDataFolder() + "/Data/";
+        String FOLDER = plugin.getDataFolder() + "/Data/";
 
         if(!plugin.getDataFolder().exists()){
 
@@ -62,11 +60,10 @@ public class SqliteUtility {
 
     private void connect(){
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
-            Connection connection = null;
             try{
                 connection = DriverManager.getConnection(URL);
-                this.connection = connection;
                 this.meta = connection.getMetaData();
+                this.connection.setAutoCommit(false);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -86,15 +83,14 @@ public class SqliteUtility {
 
     private void createTable(){
         plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, ()->{
-            String sql =
-                      "CREATE TABLE IF NOT EXISTS reputation ("
-                    + " uuid text PRIMARY KEY,"
-                    + " likes INT NOT NULL,"
-                    + " dislikes INT NOT NULL"
-                    + ");";
             try{
                 Statement stmt = connection.createStatement();
-                stmt.execute(sql);
+                stmt.execute("""
+                        CREATE TABLE IF NOT EXISTS reputation (
+                         uuid text PRIMARY KEY,
+                         likes INT NOT NULL,
+                         dislikes INT NOT NULL
+                        );""");
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -107,12 +103,10 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement pstmt = connection.prepareStatement(
-                        "INSERT INTO reputation(uuid, likes, dislikes) VALUES(?,?,?) on conflict do update set likes = likes + ? and dislikes = dislikes + ?;");
+                        "INSERT INTO reputation(uuid, likes, dislikes) VALUES(?,?,?) on conflict do nothing;");
                 pstmt.setString(1, uuid.toString());
                 pstmt.setInt(2, 0);
                 pstmt.setInt(3, 0);
-                pstmt.setInt(4, 0);
-                pstmt.setInt(5, 0);
                 pstmt.execute();
                 pstmt.close();
             } catch (SQLException e) {
@@ -128,30 +122,16 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "SELECT EXISTS(select * from reputation where uuid = ?;)"
+                        "SELECT EXISTS(select * from reputation where uuid = ?);"
                 );
-                ResultSet rs = stmt.executeQuery();
-                if(isFilled(rs)){
-                    bool.set(true);
-                }
+                stmt.setString(1, uuid.toString());
+                bool.set(stmt.executeQuery().getInt(1) == 1);
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         });
 
         return bool.get();
-    }
-
-    public boolean isFilled(ResultSet rs){
-        boolean isEmpty = true;
-        try{
-            while(rs.next()){
-                isEmpty = false;
-            }
-        }catch (SQLException e){
-            e.printStackTrace();
-        }
-        return !isEmpty;
     }
 
     public void setLikes(Player player, int amt){
@@ -173,16 +153,21 @@ public class SqliteUtility {
 
     public int getLikes(Player player){
 
+        try {
+            plugin.getLogger().log(Level.INFO, String.valueOf(connection.isClosed()));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         AtomicInteger likes = new AtomicInteger();
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "SELECT likes from reputation where uuid = ?"
+                        "SELECT likes from reputation where uuid = ?" //TODO error
                 );
-                stmt.setString(1, player.getUniqueId().toString());
-                ResultSet resultSet = stmt.executeQuery();
-                likes.set(resultSet.getInt("likes"));
+                stmt.setString(1, player.getUniqueId().toString()); //TODO error
+                likes.set(stmt.executeQuery().getInt("likes"));
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -194,16 +179,21 @@ public class SqliteUtility {
 
     public int getDislikes(Player player){
 
+        try {
+            plugin.getLogger().log(Level.INFO, String.valueOf(connection.isClosed()));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         AtomicInteger dislikes = new AtomicInteger();
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "SELECT dislikes from reputation where uuid = ?"
+                        "SELECT dislikes from reputation where uuid = ?" //TODO error
                 );
-                stmt.setString(1, player.getUniqueId().toString());
-                ResultSet resultSet = stmt.executeQuery();
-                dislikes.set(resultSet.getInt("dislikes"));
+                stmt.setString(1, player.getUniqueId().toString()); //TODO error
+                dislikes.set(stmt.executeQuery().getInt("dislikes"));
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -223,7 +213,6 @@ public class SqliteUtility {
                 stmt.setString(2, player.getUniqueId().toString());
                 stmt.setInt(1, amt);
                 stmt.execute();
-                stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -245,10 +234,11 @@ public class SqliteUtility {
 
             try {
                 this.connection = DriverManager.getConnection(URL);
-                if(connection != null){
+                if(this.connection != null){
                     this.meta = connection.getMetaData();
+                    this.connection.setAutoCommit(false);
                 }
-                plugin.getLogger().log(Level.INFO,meta.getURL().toString());
+                plugin.getLogger().log(Level.INFO, meta.getURL());
                 plugin.getLogger().log(Level.INFO,meta.getConnection().toString());
             } catch (SQLException e) {
                 throw new RuntimeException(e);

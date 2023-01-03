@@ -4,6 +4,6 @@ main: me.xaxis.reputation.Reputation
 api-version: 1.19
 authors: [Xaxis]
 website: github.com/XaxisPlayz
-soft-depend: [PlaceholderAPI]
+depend: [PlaceholderAPI]
 commands:
     reputation:

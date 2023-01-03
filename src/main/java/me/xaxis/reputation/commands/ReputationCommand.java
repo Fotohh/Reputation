@@ -1,7 +1,9 @@
 package me.xaxis.reputation.commands;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.xaxis.reputation.Lang;
 import me.xaxis.reputation.Reputation;
+import me.xaxis.reputation.colorchat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -38,25 +40,30 @@ public class ReputationCommand implements CommandExecutor {
         if(args.length == 0){
             //TODO This will be a help cmd
 
-        }else if(args.length == 1){
+            return true;
+        }
+        if(args.length == 1){
 
             Player target = Bukkit.getPlayer(args[0]);
 
             if(target == null || !target.isOnline()){
-                player.sendMessage("That player is invalid!");
+                player.sendMessage(args[0] + " is not online or is null!");
                 return true;
             }
 
-            //ChiboYen's total reputation is X (Y likes | Z dislikes)
+            String msg = PlaceholderAPI.setPlaceholders(target, "%player_name%'s total reputation is %reputation_total% (%reputation_likes% likes | %reputation_dislikes% dislikes)");
 
-            player.sendMessage("");
+            player.sendMessage(Chat.color(msg));
 
-        }else if(args.length == 2){
+            return true;
+
+        }
+        if(args.length == 2){
 
             Player target = Bukkit.getPlayer(args[0]);
 
             if(target == null || !target.isOnline()){
-                player.sendMessage("That player is invalid!");
+                player.sendMessage(Chat.color(args[0] + " is not online or is null!"));
                 return true;
             }
 
@@ -65,25 +72,32 @@ public class ReputationCommand implements CommandExecutor {
                     if(!plugin.getSqliteUtility().entryExists(target.getUniqueId())){
                         plugin.getSqliteUtility().createPlayerReputationEntry(target.getUniqueId());
                     }
-                    plugin.getSqliteUtility().setLikes(target, plugin.getConfig().getInt("like_amt") + plugin.getSqliteUtility().getLikes(target));
-                    player.sendMessage("You have liked this player!");
+                    int a = plugin.getConfig().getInt("like_amt");
+                    int b = plugin.getSqliteUtility().getLikes(target);
+                    plugin.getSqliteUtility().setLikes(target,a+b);
+                    player.sendMessage(PlaceholderAPI.setPlaceholders(target,Chat.color("You have liked %player_name%!")));
                 }
                 case "dislike" ->{
                     if(!plugin.getSqliteUtility().entryExists(target.getUniqueId())){
                         plugin.getSqliteUtility().createPlayerReputationEntry(target.getUniqueId());
                     }
-                    plugin.getSqliteUtility().setLikes(target, plugin.getConfig().getInt("dislike_amt") + plugin.getSqliteUtility().getDislikes(target));
-                    player.sendMessage("You have disliked this player!");
+                    int a = plugin.getConfig().getInt("dislike_amt");
+                    int b = plugin.getSqliteUtility().getDislikes(target);
+                    plugin.getSqliteUtility().setLikes(target,a+b);
+                    player.sendMessage(PlaceholderAPI.setPlaceholders(target,Chat.color("You have disliked %player_name%!")));
                 }
             }
 
-        } else if (args.length == 4 && args[1].equalsIgnoreCase("set")) {
+            return true;
+
+        }
+        if (args.length == 4 && args[1].equalsIgnoreCase("set")) {
             Player target = Bukkit.getPlayer(args[0]);
 
             //reputation player set likes 10 | 4 arguments
 
             if(target == null || !target.isOnline()){
-                player.sendMessage("That player is invalid!");
+                player.sendMessage(Chat.color(args[0] +" is not online or is null!"));
                 return true;
             }
 
@@ -96,23 +110,26 @@ public class ReputationCommand implements CommandExecutor {
             try{
                 amount = Integer.parseInt(args[3]);
             }catch (Exception e){
-                player.sendMessage("argument must be an integer!");
+                player.sendMessage(Chat.color("Argument must be an integer! Found " +args[3]));
+                return true;
             }
 
             switch (args[2]){
                 case "likes"->{
                     plugin.getSqliteUtility().setLikes(target, amount);
-                    player.sendMessage("Successfully set their likes");
+                    player.sendMessage(PlaceholderAPI.setPlaceholders(target,Chat.color("Successfully set %player_name%'s likes to "+amount)));
                 }
                 case "dislikes"->{
                     plugin.getSqliteUtility().setDislikes(target, amount);
-                    player.sendMessage("Successfully set their dislikes");
+                    player.sendMessage(PlaceholderAPI.setPlaceholders(target,Chat.color("Successfully set %player_name%'s dislikes "+amount)));
                 }
             }
 
-        } else{
-            player.sendMessage("Invalid usage!");
+            return true;
+
         }
+
+        player.sendMessage(Chat.color("Invalid usage!"));
 
         return true;
     }

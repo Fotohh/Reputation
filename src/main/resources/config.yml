@@ -1,7 +1,9 @@
-like_amt: 1
-dislike_amt: 1
+like_amt: 1 #Self explanatory
+dislike_amt: 1 #Self explanatory
 thresholds:
-    #can add your own
-    200: 'light_green'
-Lang:
+    #can add your own | MUST BE NUMBERS SURROUNDED BY '' | The numbers represent the threshold amt
+    '0': '&4' #IMPORTANT! Make sure to always have a threshold for 0
+    '200': '&7' #For example this one's threshold is 200, if its greater than 200 but less than the next threshold then it will use this color
+    '400': '&a'
+Lang: #This is all the messages I've done for now...
     SENDER_NOT_PLAYER: '&4You must be a player to execute this command!'

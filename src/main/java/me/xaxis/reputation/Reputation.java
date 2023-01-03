@@ -1,12 +1,10 @@
 package me.xaxis.reputation;
 
-import me.clip.placeholderapi.PlaceholderAPI;
 import me.xaxis.reputation.commands.ReputationCommand;
 import me.xaxis.reputation.handle.SqliteUtility;
 import me.xaxis.reputation.papi.PapiUtility;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
 import java.util.logging.Level;
 
 public final class Reputation extends JavaPlugin {
@@ -19,7 +17,7 @@ public final class Reputation extends JavaPlugin {
         if(sqliteUtility != null) {
             return sqliteUtility;
         }
-        return null;
+        return new SqliteUtility(this);
     }
 
     @Override

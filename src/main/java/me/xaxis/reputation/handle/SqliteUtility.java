@@ -133,6 +133,8 @@ public class SqliteUtility {
         return integer.get();
     }
 
+
+    //TODO update ratio value is working incorrectly, seems to be added the dislikes and likes...
     private void updateValues(Player player) throws SQLException {
 
         PreparedStatement stmt = connection.prepareStatement(

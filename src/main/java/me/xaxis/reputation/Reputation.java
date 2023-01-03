@@ -13,6 +13,10 @@ public final class Reputation extends JavaPlugin {
 
     //d9f6734f-85f7-4133-9f10-8aa54542b06c
 
+    //CORRECT SOLUTION: Score = Lower bound of Wilson score confidence interval for a Bernoulli parameter (for ratio)
+    //https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval
+    //https://www.evanmiller.org/how-not-to-sort-by-average-rating.html
+
     private SqliteUtility sqliteUtility;
 
     public SqliteUtility getSqliteUtility() {

@@ -59,7 +59,7 @@ public class SqliteUtility {
                          dislikes INT NOT NULL,
                          total INT NOT NULL,
                          ratio FLOAT NOT NULL,
-                         capacity real
+                         capacity INT
                         );""");
                 stmt.close();
             } catch (SQLException e) {
@@ -73,8 +73,8 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement pstmt = connection.prepareStatement(
-                        "insert into reputation (uuid, likes, dislikes, total, ratio)\n" +
-                                "values (?,?,?,?,?) on conflict do update set likes = likes + ? and dislikes = dislikes + ? and total = likes + dislikes and ratio = likes - dislikes / likes + dislikes;");
+                        "insert into reputation (uuid, likes, dislikes, total, ratio, capacity)\n" +
+                                "values (?,?,?,?,?, ?) on conflict do update set likes = likes + ? and dislikes = dislikes + ? and total = likes + dislikes and ratio = likes - dislikes / likes + dislikes;");
                 pstmt.setString(1, uuid.toString());
                 pstmt.setInt(2, 0);
                 pstmt.setInt(3, 0);
@@ -82,6 +82,7 @@ public class SqliteUtility {
                 pstmt.setFloat(5, 0);
                 pstmt.setInt(6, 0);
                 pstmt.setInt(7, 0);
+                pstmt.setInt(7, -1);
                 pstmt.executeUpdate();
                 pstmt.close();
             } catch (SQLException e) {
@@ -156,8 +157,8 @@ public class SqliteUtility {
             try{
                 PreparedStatement stmt = connection.prepareStatement(
                         "update reputation set likes = reputation.likes + ? where uuid = ?;" +
-                                "UPDATE reputation set total = likes + dislikes where uuid = ?;" +
-                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where uuid = ?;"
+                                "UPDATE reputation set total = likes + dislikes where capacity = ? or uuid = ?;" +
+                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where capacity = ? or uuid = ?;"
                 );
                 stmt.setInt(1, i);
                 stmt.setString(2, player.getUniqueId().toString());
@@ -174,8 +175,8 @@ public class SqliteUtility {
             try{
                 PreparedStatement stmt = connection.prepareStatement(
                         "update reputation set dislikes = reputation.dislikes + ? where uuid = ?;"+
-                                "UPDATE reputation set total = likes + dislikes where uuid = ?;" +
-                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where uuid = ?;"
+                                "UPDATE reputation set total = likes + dislikes where capacity = ? or uuid = ?;" +
+                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where capacity = ? or uuid = ?;"
                 );
                 stmt.setInt(1, i);
                 stmt.setString(2, player.getUniqueId().toString());
@@ -193,8 +194,8 @@ public class SqliteUtility {
             try{
                 PreparedStatement stmt = connection.prepareStatement(
                         "UPDATE reputation SET dislikes = ? where uuid = ?;"+
-                                "UPDATE reputation set total = likes + dislikes where uuid = ?;" +
-                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where uuid = ?;"
+                                "UPDATE reputation set total = likes + dislikes where capacity = ? or uuid = ?;" +
+                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where capacity = ? or uuid = ?;"
                 );
                 stmt.setInt(1, i);
                 stmt.setString(2, player.getUniqueId().toString());
@@ -211,8 +212,8 @@ public class SqliteUtility {
             try{
                 PreparedStatement stmt = connection.prepareStatement(
                         "update reputation set likes = ? where uuid = ?;"+
-                                "UPDATE reputation set total = likes + dislikes where uuid = ?;" +
-                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where uuid = ?;"
+                                "UPDATE reputation set total = likes + dislikes where capacity = ? or uuid = ?;" +
+                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where capacity = ? or uuid = ?;"
                 );
                 stmt.setInt(1, i);
                 stmt.setString(2, player.getUniqueId().toString());
@@ -220,7 +221,7 @@ public class SqliteUtility {
                 stmt.executeUpdate();
                 stmt.close();
             } catch (SQLException e) {
-                throw new RuntimeException("Unable to set lieks for "+player.getName(),e);
+                throw new RuntimeException("Unable to set likes for "+player.getName(),e);
             }
         });
     }

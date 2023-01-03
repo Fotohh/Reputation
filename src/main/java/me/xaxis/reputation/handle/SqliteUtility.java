@@ -11,7 +11,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
-@SuppressWarnings("all")
 public class SqliteUtility {
 
     private static String URL;
@@ -60,7 +59,7 @@ public class SqliteUtility {
                          dislikes INT NOT NULL,
                          total INT NOT NULL,
                          ratio FLOAT NOT NULL,
-                         capactiy real
+                         capacity real
                         );""");
                 stmt.close();
             } catch (SQLException e) {
@@ -156,12 +155,12 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "update reputation set likes = likes + ?, total = ? + dislikes, ratio = ? - dislikes / ? + dislikes where uuid = ?;"
+                        "update reputation set likes = reputation.likes + ? where uuid = ?;" +
+                                "UPDATE reputation set total = likes + dislikes where uuid = ?;" +
+                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where uuid = ?;"
                 );
-                for(int e = 1; e != 4; e++){
-                    stmt.setInt(e, i);
-                }
-                stmt.setString(5, player.getUniqueId().toString());
+                stmt.setInt(1, i);
+                stmt.setString(2, player.getUniqueId().toString());
                 stmt.executeUpdate();
                 stmt.close();
             }catch (SQLException e){
@@ -174,12 +173,13 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "update reputation set dislikes = dislikes + ?, total = likes + ?, ratio = likes - ? / likes + ? where uuid = ?;"
+                        "update reputation set dislikes = reputation.dislikes + ? where uuid = ?;"+
+                                "UPDATE reputation set total = likes + dislikes where uuid = ?;" +
+                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where uuid = ?;"
                 );
-                for(int e = 1; e != 4; e++){
-                    stmt.setInt(e, i);
-                }
-                stmt.setString(5, player.getUniqueId().toString());
+                stmt.setInt(1, i);
+                stmt.setString(2, player.getUniqueId().toString());
+
                 stmt.executeUpdate();
                 stmt.close();
             }catch (SQLException e){
@@ -188,16 +188,17 @@ public class SqliteUtility {
         });
     }
 
-    public void setDislikes(Player player, int amt){
+    public void setDislikes(Player player, int i){
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "UPDATE reputation SET dislikes = ?, total = likes + ?, ratio = likes - ? / likes + ? WHERE uuid = ?;"
+                        "UPDATE reputation SET dislikes = ? where uuid = ?;"+
+                                "UPDATE reputation set total = likes + dislikes where uuid = ?;" +
+                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where uuid = ?;"
                 );
-                for(int i = 1; i != 4; i++){
-                    stmt.setInt(i, amt);
-                }
-                stmt.setString(5, player.getUniqueId().toString());
+                stmt.setInt(1, i);
+                stmt.setString(2, player.getUniqueId().toString());
+
                 stmt.executeUpdate();
             } catch (SQLException e) {
                 throw new RuntimeException("Unable to set dislikes for "+player.getName(),e);
@@ -205,16 +206,17 @@ public class SqliteUtility {
         });
     }
 
-    public void setLikes(Player player, int amt){
+    public void setLikes(Player player, int i){
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "update reputation set likes = ?, total = ? + dislikes, ratio = ? - dislikes / ? + dislikes where uuid = ?;"
+                        "update reputation set likes = ? where uuid = ?;"+
+                                "UPDATE reputation set total = likes + dislikes where uuid = ?;" +
+                                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where uuid = ?;"
                 );
-                for(int i = 1; i != 4; i++){
-                    stmt.setInt(i, amt);
-                }
+                stmt.setInt(1, i);
                 stmt.setString(2, player.getUniqueId().toString());
+
                 stmt.executeUpdate();
                 stmt.close();
             } catch (SQLException e) {

@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.logging.Level;
 
+@SuppressWarnings("all")
 public class PapiUtility extends PlaceholderExpansion {
 
     private final Reputation plugin;

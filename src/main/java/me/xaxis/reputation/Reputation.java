@@ -6,6 +6,7 @@ import me.xaxis.reputation.handle.SqliteUtility;
 import me.xaxis.reputation.papi.PapiUtility;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.SQLException;
 import java.util.logging.Level;
 
 public final class Reputation extends JavaPlugin {
@@ -42,6 +43,10 @@ public final class Reputation extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        sqliteUtility.disconnect();
+        try {
+            sqliteUtility.disconnect();
+        } catch (SQLException e) {
+            getLogger().log(Level.SEVERE, "Unable to disconnect from SQLite Server");
+        }
     }
 }

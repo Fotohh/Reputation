@@ -5,7 +5,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.*;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,50 +23,34 @@ public class SqliteUtility {
 
         this.plugin = plugin;
 
-        if(!plugin.getDataFolder().exists()) plugin.getDataFolder().mkdirs();
+        plugin.getDataFolder().mkdirs();
 
         URL = "jdbc:sqlite:" + plugin.getDataFolder() + "/Data/reputation.db";
         String FOLDER = plugin.getDataFolder() + "/Data/";
 
-        plugin.getDataFolder().mkdirs();
-
         new File(FOLDER).mkdirs();
 
-        try {
-            connect();
-        }catch (Exception e){
-            create();
-        }
+        create();
+
+        plugin.getLogger().log(Level.WARNING, "Connecting to database");
 
         createTable();
     }
 
-    private void connect(){
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
-            try{
-                connection = DriverManager.getConnection(URL);
-                this.meta = connection.getMetaData();
-                this.connection.setAutoCommit(false);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-
-        });
-    }
-
-    public void disconnect() {
-        try {
-            if (connection != null) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public void disconnect() throws SQLException {
+        if (connection == null) return;
+        connection.close();
     }
 
     private void createTable(){
+        plugin.getLogger().log(Level.INFO, "Preparing to create table...");
         plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, ()->{
+            plugin.getLogger().log(Level.INFO, "Creating table...");
             try{
+                if(connection == null){
+                    this.connection = DriverManager.getConnection(URL);
+                    plugin.getLogger().log(Level.INFO, "Connection was null, resetting connection...");
+                }
                 Statement stmt = connection.createStatement();
                 stmt.setQueryTimeout(100);
                 stmt.execute("""
@@ -76,11 +59,12 @@ public class SqliteUtility {
                          likes INT NOT NULL,
                          dislikes INT NOT NULL,
                          total INT NOT NULL,
-                         ratio FLOAT NOT NULL
+                         ratio FLOAT NOT NULL,
+                         capactiy real
                         );""");
                 stmt.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Unable to create table", e);
             }
         },5);
     }
@@ -102,7 +86,7 @@ public class SqliteUtility {
                 pstmt.executeUpdate();
                 pstmt.close();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Unable to create player reputation entry",e);
             }
         });
 
@@ -122,7 +106,7 @@ public class SqliteUtility {
                 atomicInteger.set(Math.round(stmt.getResultSet().getFloat("ratio")));
                 stmt.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Unable to retrieve player like-dislike ratio",e);
             }
         });
 
@@ -142,7 +126,7 @@ public class SqliteUtility {
                 integer.set(stmt.getResultSet().getInt("total"));
                 stmt.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Unable to retrieve player's total reputation",e);
             }
         });
 
@@ -161,7 +145,7 @@ public class SqliteUtility {
                 stmt.execute();
                 bool.set(stmt.getResultSet().getInt(1) == 1);
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Unable to check if entry exists for player: "+uuid,e);
             }
         });
 
@@ -172,7 +156,7 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "update reputation set likes = likes + ? and total = ? + dislikes and ratio = ? - dislikes / ? + dislikes where uuid = ?;"
+                        "update reputation set likes = likes + ?, total = ? + dislikes, ratio = ? - dislikes / ? + dislikes where uuid = ?;"
                 );
                 for(int e = 1; e != 4; e++){
                     stmt.setInt(e, i);
@@ -181,7 +165,7 @@ public class SqliteUtility {
                 stmt.executeUpdate();
                 stmt.close();
             }catch (SQLException e){
-                e.printStackTrace();
+                throw new RuntimeException("Unable to add a like to "+player.getName(), e);
             }
         });
     }
@@ -190,7 +174,7 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "update reputation set dislikes = dislikes + ? and total = likes + ?  and ratio = likes - ? / likes + ? where uuid = ?;"
+                        "update reputation set dislikes = dislikes + ?, total = likes + ?, ratio = likes - ? / likes + ? where uuid = ?;"
                 );
                 for(int e = 1; e != 4; e++){
                     stmt.setInt(e, i);
@@ -199,7 +183,7 @@ public class SqliteUtility {
                 stmt.executeUpdate();
                 stmt.close();
             }catch (SQLException e){
-                e.printStackTrace();
+                throw new RuntimeException("Unable to add a dislike to "+player.getName(), e);
             }
         });
     }
@@ -208,7 +192,7 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "UPDATE reputation SET dislikes = ? and total = likes + ? and ratio = likes - ? / likes + ? WHERE uuid = ?;"
+                        "UPDATE reputation SET dislikes = ?, total = likes + ?, ratio = likes - ? / likes + ? WHERE uuid = ?;"
                 );
                 for(int i = 1; i != 4; i++){
                     stmt.setInt(i, amt);
@@ -216,7 +200,7 @@ public class SqliteUtility {
                 stmt.setString(5, player.getUniqueId().toString());
                 stmt.executeUpdate();
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Unable to set dislikes for "+player.getName(),e);
             }
         });
     }
@@ -225,7 +209,7 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "update reputation set likes = ? and total = ? + dislikes and ratio = ? - dislikes / ? + dislikes where uuid = ?;"
+                        "update reputation set likes = ?, total = ? + dislikes, ratio = ? - dislikes / ? + dislikes where uuid = ?;"
                 );
                 for(int i = 1; i != 4; i++){
                     stmt.setInt(i, amt);
@@ -234,7 +218,7 @@ public class SqliteUtility {
                 stmt.executeUpdate();
                 stmt.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Unable to set lieks for "+player.getName(),e);
             }
         });
     }
@@ -253,7 +237,7 @@ public class SqliteUtility {
                 likes.set(stmt.getResultSet().getInt("likes")); //TODO error
                 stmt.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Unable to get likes for "+player.getName(),e);
             }
         });
 
@@ -274,7 +258,7 @@ public class SqliteUtility {
                 dislikes.set(stmt.getResultSet().getInt("dislikes")); //TODO error
                 stmt.close();
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RuntimeException("Unable to get dislikes for "+player.getName(),e);
             }
         });
 
@@ -287,12 +271,9 @@ public class SqliteUtility {
                 this.connection = DriverManager.getConnection(URL);
                 if(this.connection != null){
                     this.meta = connection.getMetaData();
-                    this.connection.setAutoCommit(false);
                 }
-                plugin.getLogger().log(Level.INFO, meta.getURL());
-                plugin.getLogger().log(Level.INFO,meta.getConnection().toString());
             } catch (SQLException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Unable to create a database",e);
             }
         });
     }

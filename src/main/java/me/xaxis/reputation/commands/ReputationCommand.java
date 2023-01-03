@@ -29,13 +29,12 @@ public class ReputationCommand implements CommandExecutor {
             sender.getServer().getPluginManager().disablePlugin(plugin);
             return true;
         }
-
-        if(!(sender instanceof Player)){
+        if(!(sender instanceof Player player)){
             sender.sendMessage(Lang.SENDER_NOT_PLAYER.getMsg(plugin));
             return true;
         }
 
-        Player player = (Player) sender;
+        plugin.getSqliteUtility().createPlayerReputationEntry(player.getUniqueId());
 
         if(args.length == 0){
             //TODO This will be a help cmd
@@ -47,7 +46,7 @@ public class ReputationCommand implements CommandExecutor {
             Player target = Bukkit.getPlayer(args[0]);
 
             if(target == null || !target.isOnline()){
-                player.sendMessage(args[0] + " is not online or is null!");
+                player.sendMessage(Chat.color(args[0] +" is not online or is null!"));
                 return true;
             }
 
@@ -63,27 +62,17 @@ public class ReputationCommand implements CommandExecutor {
             Player target = Bukkit.getPlayer(args[0]);
 
             if(target == null || !target.isOnline()){
-                player.sendMessage(Chat.color(args[0] + " is not online or is null!"));
+                player.sendMessage(Chat.color(args[0] +" is not online or is null!"));
                 return true;
             }
 
             switch (args[1]){
                 case "like" ->{
-                    if(!plugin.getSqliteUtility().entryExists(target.getUniqueId())){
-                        plugin.getSqliteUtility().createPlayerReputationEntry(target.getUniqueId());
-                    }
-                    int a = plugin.getConfig().getInt("like_amt");
-                    int b = plugin.getSqliteUtility().getLikes(target);
-                    plugin.getSqliteUtility().setLikes(target,a+b);
+                    plugin.getSqliteUtility().addLike(player, plugin.getConfig().getInt("like_amt"));
                     player.sendMessage(PlaceholderAPI.setPlaceholders(target,Chat.color("You have liked %player_name%!")));
                 }
                 case "dislike" ->{
-                    if(!plugin.getSqliteUtility().entryExists(target.getUniqueId())){
-                        plugin.getSqliteUtility().createPlayerReputationEntry(target.getUniqueId());
-                    }
-                    int a = plugin.getConfig().getInt("dislike_amt");
-                    int b = plugin.getSqliteUtility().getDislikes(target);
-                    plugin.getSqliteUtility().setLikes(target,a+b);
+                    plugin.getSqliteUtility().addDislike(player, plugin.getConfig().getInt("dislike_amt"));
                     player.sendMessage(PlaceholderAPI.setPlaceholders(target,Chat.color("You have disliked %player_name%!")));
                 }
             }
@@ -94,22 +83,15 @@ public class ReputationCommand implements CommandExecutor {
         if (args.length == 4 && args[1].equalsIgnoreCase("set")) {
             Player target = Bukkit.getPlayer(args[0]);
 
-            //reputation player set likes 10 | 4 arguments
-
             if(target == null || !target.isOnline()){
                 player.sendMessage(Chat.color(args[0] +" is not online or is null!"));
                 return true;
             }
 
-            if(!plugin.getSqliteUtility().entryExists(target.getUniqueId())){
-                plugin.getSqliteUtility().createPlayerReputationEntry(target.getUniqueId());
-            }
-
-            int amount = 0;
-
+            int amount;
             try{
                 amount = Integer.parseInt(args[3]);
-            }catch (Exception e){
+            }catch(Exception e){
                 player.sendMessage(Chat.color("Argument must be an integer! Found " +args[3]));
                 return true;
             }

@@ -1,6 +1,7 @@
 package me.xaxis.reputation;
 
 import me.xaxis.reputation.commands.ReputationCommand;
+import me.xaxis.reputation.events.onJoin;
 import me.xaxis.reputation.handle.SqliteUtility;
 import me.xaxis.reputation.papi.PapiUtility;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -9,15 +10,15 @@ import java.util.logging.Level;
 
 public final class Reputation extends JavaPlugin {
 
-    private SqliteUtility sqliteUtility;
+    //d9f6734f-85f7-4133-9f10-8aa54542b06c
 
-    //TODO example:  text = PlaceholderAPI.setPlaceholders(player, text);
+    private SqliteUtility sqliteUtility;
 
     public SqliteUtility getSqliteUtility() {
         if(sqliteUtility != null) {
             return sqliteUtility;
         }
-        return new SqliteUtility(this);
+        return null;
     }
 
     @Override
@@ -34,6 +35,7 @@ public final class Reputation extends JavaPlugin {
 
         new ReputationCommand(this);
         new PapiUtility(this).register();
+        new onJoin(this);
 
     }
 

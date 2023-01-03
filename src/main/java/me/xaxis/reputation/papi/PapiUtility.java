@@ -20,7 +20,7 @@ public class PapiUtility extends PlaceholderExpansion {
 
     @Override
     public @NotNull String getIdentifier() {
-        return "reputation";
+        return "Reputation";
     }
 
     @Override
@@ -42,7 +42,7 @@ public class PapiUtility extends PlaceholderExpansion {
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         switch (params){
             case "total"->{
-                return String.valueOf(plugin.getSqliteUtility().getLikes(player) + plugin.getSqliteUtility().getDislikes(player));
+                return String.valueOf(plugin.getSqliteUtility().getTotalReputation(player));
             }
             case "likes"->{
                 return String.valueOf(plugin.getSqliteUtility().getLikes(player));
@@ -51,11 +51,7 @@ public class PapiUtility extends PlaceholderExpansion {
                 return String.valueOf(plugin.getSqliteUtility().getDislikes(player));
             }
             case "percentage"->{
-                //likes - dislikes / likes + dislikes (percentage ratio)
-                int likes = plugin.getSqliteUtility().getLikes(player);
-                int dislikes = plugin.getSqliteUtility().getDislikes(player);
-
-                return String.valueOf((likes - dislikes) / (likes + dislikes));
+                return String.valueOf(plugin.getSqliteUtility().getRatio(player));
             }
             case "color"->{
 
@@ -63,7 +59,7 @@ public class PapiUtility extends PlaceholderExpansion {
 
                 ArrayList<Integer> values = new ArrayList<>();
 
-                int reputation = plugin.getSqliteUtility().getDislikes(player) + plugin.getSqliteUtility().getLikes(player);
+                int reputation = plugin.getSqliteUtility().getTotalReputation(player);
 
                 for(String s : section.getKeys(false)){
                     try{

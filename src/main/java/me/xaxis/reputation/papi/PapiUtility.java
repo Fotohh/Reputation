@@ -74,6 +74,7 @@ public class PapiUtility extends PlaceholderExpansion {
 
                 if(values.isEmpty()){
                     plugin.getLogger().log(Level.SEVERE, "ArrayList<Integer> values >> has no values! Contact developer with this error code: AHNC1");
+                    return null;
                 }
 
                 for(int i = 0; i < values.size(); i++){

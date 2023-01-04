@@ -147,7 +147,6 @@ public class SqliteUtility {
         stmt2.setString(1, player.getUniqueId().toString());
         stmt2.execute();
         int likes = stmt2.getResultSet().getInt("likes");
-        plugin.getLogger().log(Level.INFO, "Likes : "+likes);
         stmt2.close();
 
         PreparedStatement stmt3 = connection.prepareStatement(
@@ -156,7 +155,6 @@ public class SqliteUtility {
         stmt3.setString(1, player.getUniqueId().toString());
         stmt3.execute();
         int dislikes = stmt3.getResultSet().getInt("dislikes");
-        plugin.getLogger().log(Level.INFO, "Dislikes : "+dislikes);
         stmt3.close();
 
         double max = Math.max(likes,dislikes);
@@ -169,10 +167,6 @@ public class SqliteUtility {
         s.setString(3, player.getUniqueId().toString());
         s.executeUpdate();
         s.close();
-
-        plugin.getLogger().log(Level.INFO, "Ratio : "+min/max*100);
-        plugin.getLogger().log(Level.INFO, "likes : "+likes + " dislikes : "+dislikes);
-        plugin.getLogger().log(Level.INFO, "Min : " + min + " Max : "+max);
 
     }
 

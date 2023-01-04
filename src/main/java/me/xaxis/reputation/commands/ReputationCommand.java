@@ -1,6 +1,5 @@
 package me.xaxis.reputation.commands;
 
-import me.clip.placeholderapi.PlaceholderAPI;
 import me.xaxis.reputation.Lang;
 import me.xaxis.reputation.ReputationMain;
 import me.xaxis.reputation.colorchat.Chat;
@@ -46,7 +45,7 @@ public class ReputationCommand implements CommandExecutor {
         if(args.length == 1){
             Player target = Bukkit.getPlayer(args[0]);
             if(target == null || !target.isOnline()){
-                player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin), target));
+                player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin).replace("%player_name_offline%",args[0]), target));
                 return true;
             }
             player.sendMessage(Chat.color(Lang.PLAYER_REPUTATION.getMsg(plugin), target));
@@ -57,12 +56,12 @@ public class ReputationCommand implements CommandExecutor {
             Player target = Bukkit.getPlayer(args[0]);
 
             if(target == null || !target.isOnline()){
-                player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin), target));
+                player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin).replace("%player_name_offline%",args[0]), target));
                 return true;
             }
 
-            if(!checkTime(player.getUniqueId())){
-                long timeInSeconds = TimeUnit.SECONDS.toSeconds(System.currentTimeMillis() - plugin.getTimestamp().get(player.getUniqueId()));
+            if(!TimeIsUp(player.getUniqueId())){
+                long timeInSeconds = Math.abs(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - plugin.getTimestamp().get(player.getUniqueId())));
                 String msg = Lang.PLAYER_CMD_TIMEOUT.getMsg(plugin).replace("%time_left%",String.valueOf(timeInSeconds));
                 player.sendMessage(Chat.color(msg, player));
                 return true;
@@ -88,7 +87,7 @@ public class ReputationCommand implements CommandExecutor {
             Player target = Bukkit.getPlayer(args[0]);
 
             if(target == null || !target.isOnline()){
-                player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin), target));
+                player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin).replace("%player_name_offline%",args[0]), target));
                 return true;
             }
 
@@ -116,7 +115,8 @@ public class ReputationCommand implements CommandExecutor {
 
             return true;
 
-        } else if (!player.hasPermission("reputation.admin") && args.length == 4 && args[1].equalsIgnoreCase("set")) {
+        }
+        else if (!player.hasPermission("reputation.admin") && args.length == 4 && args[1].equalsIgnoreCase("set")) {
             player.sendMessage(Chat.color(Lang.NO_PERMISSION.getMsg(plugin), player));
         }
 
@@ -127,22 +127,22 @@ public class ReputationCommand implements CommandExecutor {
 
     private void createPlayerTimestamp(UUID uuid){
         Long currentTime = System.currentTimeMillis();
-        long waitTime = TimeUnit.SECONDS.toMillis(plugin.getConfig().getLong("execute-command-timeout"));
+        long waitTime = TimeUnit.SECONDS.toMillis(plugin.getConfig().getLong("execute-cmd-timeout"));
         long totalTime = currentTime+waitTime;
-        plugin.getTimestamp().put(uuid,totalTime);
+        plugin.getTimestamp().putIfAbsent(uuid,totalTime);
     }
 
     /**
      * @param uuid Player UUID
      * @return true if time is up, false if it isn't
      */
-    private boolean checkTime(UUID uuid){
-        Long currentTime = System.currentTimeMillis();
+    private boolean TimeIsUp(UUID uuid){
+        if(!plugin.getTimestamp().containsKey(uuid)) return true;
+        long currentTime = System.currentTimeMillis();
         long totalTime = plugin.getTimestamp().get(uuid);
         if(currentTime>=totalTime){
             plugin.getTimestamp().remove(uuid);
             return true;
-        }
-        return false;
+        }else return false;
     }
 }

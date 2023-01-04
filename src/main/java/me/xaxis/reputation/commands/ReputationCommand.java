@@ -2,7 +2,7 @@ package me.xaxis.reputation.commands;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.xaxis.reputation.Lang;
-import me.xaxis.reputation.Reputation;
+import me.xaxis.reputation.ReputationMain;
 import me.xaxis.reputation.colorchat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -11,13 +11,15 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class ReputationCommand implements CommandExecutor {
 
-    private final Reputation plugin;
+    private final ReputationMain plugin;
 
-    public ReputationCommand(Reputation plugin){
+    public ReputationCommand(ReputationMain plugin){
         this.plugin = plugin;
         plugin.getCommand("reputation").setExecutor(this);
     }
@@ -30,7 +32,7 @@ public class ReputationCommand implements CommandExecutor {
             return true;
         }
         if(!(sender instanceof Player player)){
-            sender.sendMessage(Lang.SENDER_NOT_PLAYER.getMsg(plugin));
+            plugin.getLogger().log(Level.WARNING, Lang.SENDER_NOT_PLAYER.getMsg(plugin));
             return true;
         }
 
@@ -42,49 +44,51 @@ public class ReputationCommand implements CommandExecutor {
             return true;
         }
         if(args.length == 1){
-
             Player target = Bukkit.getPlayer(args[0]);
-
             if(target == null || !target.isOnline()){
-                player.sendMessage(Chat.color(args[0] +" is not online or is null!"));
+                player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin), target));
                 return true;
             }
-
-            String msg = PlaceholderAPI.setPlaceholders(target, "%player_name%'s total reputation is %reputation_total% (%reputation_likes% likes | %reputation_dislikes% dislikes)");
-
-            player.sendMessage(Chat.color(msg));
-
+            player.sendMessage(Chat.color(Lang.PLAYER_REPUTATION.getMsg(plugin), target));
             return true;
-
         }
         if(args.length == 2){
 
             Player target = Bukkit.getPlayer(args[0]);
 
             if(target == null || !target.isOnline()){
-                player.sendMessage(Chat.color(args[0] +" is not online or is null!"));
+                player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin), target));
                 return true;
             }
+
+            if(!checkTime(player.getUniqueId())){
+                long timeInSeconds = TimeUnit.SECONDS.toSeconds(System.currentTimeMillis() - plugin.getTimestamp().get(player.getUniqueId()));
+                String msg = Lang.PLAYER_CMD_TIMEOUT.getMsg(plugin).replace("%time_left%",String.valueOf(timeInSeconds));
+                player.sendMessage(Chat.color(msg, player));
+                return true;
+            }
+
+            createPlayerTimestamp(player.getUniqueId());
 
             switch (args[1]){
                 case "like" ->{
                     plugin.getSqliteUtility().addLike(player, plugin.getConfig().getInt("like_amt"));
-                    player.sendMessage(PlaceholderAPI.setPlaceholders(target,Chat.color("You have liked %player_name%!")));
+                    player.sendMessage(Chat.color(Lang.LIKED_PLAYER.getMsg(plugin),target));
                 }
                 case "dislike" ->{
                     plugin.getSqliteUtility().addDislike(player, plugin.getConfig().getInt("dislike_amt"));
-                    player.sendMessage(PlaceholderAPI.setPlaceholders(target,Chat.color("You have disliked %player_name%!")));
+                    player.sendMessage(Chat.color(Lang.DISLIKED_PLAYER.getMsg(plugin), target));
                 }
             }
 
             return true;
 
         }
-        if (args.length == 4 && args[1].equalsIgnoreCase("set")) {
+        if (args.length == 4 && args[1].equalsIgnoreCase("set") && player.hasPermission("reputation.admin")) {
             Player target = Bukkit.getPlayer(args[0]);
 
             if(target == null || !target.isOnline()){
-                player.sendMessage(Chat.color(args[0] +" is not online or is null!"));
+                player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin), target));
                 return true;
             }
 
@@ -92,27 +96,53 @@ public class ReputationCommand implements CommandExecutor {
             try{
                 amount = Integer.parseInt(args[3]);
             }catch(Exception e){
-                player.sendMessage(Chat.color("Argument must be an integer! Found " +args[3]));
+                String msg = Lang.ARGUMENT_NOT_NUMBER.getMsg(plugin).replace("%argument_text%", args[3]);
+                player.sendMessage(Chat.color(msg,player));
                 return true;
             }
 
             switch (args[2]){
                 case "likes"->{
                     plugin.getSqliteUtility().setLikes(target, amount);
-                    player.sendMessage(PlaceholderAPI.setPlaceholders(target,Chat.color("Successfully set %player_name%'s likes to "+amount)));
+                    String msg = Lang.SET_PLAYER_LIKES.getMsg(plugin).replace("%amount_integer%",String.valueOf(amount));
+                    player.sendMessage(Chat.color(msg,target));
                 }
                 case "dislikes"->{
                     plugin.getSqliteUtility().setDislikes(target, amount);
-                    player.sendMessage(PlaceholderAPI.setPlaceholders(target,Chat.color("Successfully set %player_name%'s dislikes "+amount)));
+                    String msg = Lang.SET_PLAYER_DISLIKES.getMsg(plugin).replace("%amount_integer%",String.valueOf(amount));
+                    player.sendMessage(Chat.color(msg,target));
                 }
             }
 
             return true;
 
+        } else if (!player.hasPermission("reputation.admin") && args.length == 4 && args[1].equalsIgnoreCase("set")) {
+            player.sendMessage(Chat.color(Lang.NO_PERMISSION.getMsg(plugin), player));
         }
 
-        player.sendMessage(Chat.color("Invalid usage!"));
+        player.sendMessage(Chat.color(Lang.INVALID_USAGE.getMsg(plugin), player));
 
         return true;
+    }
+
+    private void createPlayerTimestamp(UUID uuid){
+        Long currentTime = System.currentTimeMillis();
+        long waitTime = TimeUnit.SECONDS.toMillis(plugin.getConfig().getLong("execute-command-timeout"));
+        long totalTime = currentTime+waitTime;
+        plugin.getTimestamp().put(uuid,totalTime);
+    }
+
+    /**
+     * @param uuid Player UUID
+     * @return true if time is up, false if it isn't
+     */
+    private boolean checkTime(UUID uuid){
+        Long currentTime = System.currentTimeMillis();
+        long totalTime = plugin.getTimestamp().get(uuid);
+        if(currentTime>=totalTime){
+            plugin.getTimestamp().remove(uuid);
+            return true;
+        }
+        return false;
     }
 }

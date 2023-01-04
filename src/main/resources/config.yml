@@ -6,4 +6,15 @@ thresholds:
     '200': '&7' #For example this one's threshold is 200, if its greater than 200 but less than the next threshold then it will use this color
     '400': '&a'
 Lang: #This is all the messages I've done for now...
-    SENDER_NOT_PLAYER: '&4You must be a player to execute this command!'
+    SENDER_NOT_PLAYER: 'You must be a player to execute this command!' #Color code not supported for console messages
+    PLAYER_IS_INVALID: '&4%player_name% is not online or is invalid!'
+    PLAYER_CMD_TIMEOUT: '&4You still have %time_left% remaining before you can use this command again!'
+    PLAYER_REPUTATION: '&a%player_name%'s total reputation is %reputation_total% (%reputation_likes% likes | %reputation_dislikes% dislikes)'
+    LIKED_PLAYER: '&aYou have liked %player_name%!'
+    DISLIKED_PLAYER: '&cYou have disliked %player_name%'
+    ARGUMENT_NOT_NUMBER: '&4Argument must be a number! Found: %argument_text%'
+    SET_PLAYER_LIKES: '&aSuccessfully set %player_name%'s likes to %amount_integer%'
+    SET_PLAYER_DISLIKES: '&aSuccessfully set %player_name%'s dislikes to %amount_integer%'
+    INVALID_USAGE: '&4Invalid Usage!'
+    NO_PERMISSION: '&4You do not have the required permissions to execute this command!'
+execute-cmd-timeout: 30 #In seconds

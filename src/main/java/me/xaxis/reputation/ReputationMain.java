@@ -3,15 +3,23 @@ package me.xaxis.reputation;
 import me.xaxis.reputation.commands.ReputationCommand;
 import me.xaxis.reputation.events.onJoin;
 import me.xaxis.reputation.handle.SqliteUtility;
-import me.xaxis.reputation.papi.PapiUtility;
+import me.xaxis.reputation.papi.Reputation;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.UUID;
 import java.util.logging.Level;
 
-public final class Reputation extends JavaPlugin {
+public final class ReputationMain extends JavaPlugin {
 
     //d9f6734f-85f7-4133-9f10-8aa54542b06c
+
+    private final HashMap<UUID,Long> timestamp = new HashMap<>();
+
+    public HashMap<UUID, Long> getTimestamp() {
+        return timestamp;
+    }
 
     //CORRECT SOLUTION: Score = Lower bound of Wilson score confidence interval for a Bernoulli parameter (for ratio)
     //https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval
@@ -39,7 +47,7 @@ public final class Reputation extends JavaPlugin {
         saveDefaultConfig();
 
         new ReputationCommand(this);
-        new PapiUtility(this).register();
+        new Reputation(this).register();
         new onJoin(this);
 
     }

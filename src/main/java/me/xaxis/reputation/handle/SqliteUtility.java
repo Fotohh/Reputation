@@ -1,13 +1,12 @@
 package me.xaxis.reputation.handle;
 
-import me.xaxis.reputation.Reputation;
+import me.xaxis.reputation.ReputationMain;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.sql.*;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
@@ -18,7 +17,7 @@ public class SqliteUtility {
     private Connection connection;
     private DatabaseMetaData meta;
 
-    public SqliteUtility(Reputation plugin){
+    public SqliteUtility(ReputationMain plugin){
 
         this.plugin = plugin;
 
@@ -133,8 +132,6 @@ public class SqliteUtility {
         return integer.get();
     }
 
-
-    //TODO update ratio value is working incorrectly, seems to be added the dislikes and likes...
     private void updateValues(Player player) throws SQLException {
 
         PreparedStatement stmt = connection.prepareStatement(
@@ -143,12 +140,40 @@ public class SqliteUtility {
         stmt.setString(1, player.getUniqueId().toString());
         stmt.executeUpdate();
         stmt.close();
+
         PreparedStatement stmt2 = connection.prepareStatement(
-                "UPDATE reputation set ratio = likes - dislikes / likes + dislikes where uuid = ?;"
+                "SELECT likes from reputation where uuid = ?;"
         );
         stmt2.setString(1, player.getUniqueId().toString());
-        stmt2.executeUpdate();
+        stmt2.execute();
+        int likes = stmt2.getResultSet().getInt("likes");
+        plugin.getLogger().log(Level.INFO, "Likes : "+likes);
         stmt2.close();
+
+        PreparedStatement stmt3 = connection.prepareStatement(
+                "SELECT dislikes from reputation where uuid = ?;"
+        );
+        stmt3.setString(1, player.getUniqueId().toString());
+        stmt3.execute();
+        int dislikes = stmt3.getResultSet().getInt("dislikes");
+        plugin.getLogger().log(Level.INFO, "Dislikes : "+dislikes);
+        stmt3.close();
+
+        double max = Math.max(likes,dislikes);
+        double min = Math.min(likes,dislikes);
+        PreparedStatement s = connection.prepareStatement(
+                "UPDATE reputation set ratio = ?/?*100.0 where uuid = ?;"
+        );
+        s.setDouble(1, min);
+        s.setDouble(2, max);
+        s.setString(3, player.getUniqueId().toString());
+        s.executeUpdate();
+        s.close();
+
+        plugin.getLogger().log(Level.INFO, "Ratio : "+min/max*100);
+        plugin.getLogger().log(Level.INFO, "likes : "+likes + " dislikes : "+dislikes);
+        plugin.getLogger().log(Level.INFO, "Min : " + min + " Max : "+max);
+
     }
 
     public void addLike(Player player, int i){

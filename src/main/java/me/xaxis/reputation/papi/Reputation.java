@@ -1,7 +1,7 @@
 package me.xaxis.reputation.papi;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
-import me.xaxis.reputation.Reputation;
+import me.xaxis.reputation.ReputationMain;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -11,12 +11,17 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 
 @SuppressWarnings("all")
-public class PapiUtility extends PlaceholderExpansion {
+public class Reputation extends PlaceholderExpansion {
 
-    private final Reputation plugin;
+    private final ReputationMain plugin;
 
-    public PapiUtility(Reputation plugin) {
+    public Reputation(ReputationMain plugin) {
         this.plugin = plugin;
+    }
+
+    @Override
+    public boolean register() {
+        return true;
     }
 
     @Override
@@ -32,11 +37,6 @@ public class PapiUtility extends PlaceholderExpansion {
     @Override
     public @NotNull String getVersion() {
         return "1.0";
-    }
-
-    @Override
-    public boolean canRegister() {
-        return true;
     }
 
     @Override
@@ -79,22 +79,17 @@ public class PapiUtility extends PlaceholderExpansion {
 
                 for(int i = 0; i < values.size(); i++){
 
-                    if(values.size() < 2){
-                        String s = String.valueOf(values.get(i));
-                        return section.getString(s);
-                    }
+                    if(values.size() < 2) return section.getString(String.valueOf(values.get(i)));
 
-                    if(reputation > values.get(i) && reputation < values.get(i+1)){
-                        String s = String.valueOf(values.get(i));
-                        return section.getString(s);
-                    }
+                    if(reputation > values.get(i) && values.size() - 1 == i) return section.getString(String.valueOf(values.get(i)));
+
+                    if(reputation > values.get(i) && reputation < values.get(i+1)) return section.getString(String.valueOf(values.get(i)));
 
                 }
 
                 return "Error! Code: WNATFC | Send this to the developer!";
 
             }
-
         }
         return "Error! Code: NSFFPH | Send this to the developer!";
     }

@@ -1,6 +1,6 @@
 package me.xaxis.reputation.events;
 
-import me.xaxis.reputation.Reputation;
+import me.xaxis.reputation.ReputationMain;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -10,9 +10,9 @@ import java.util.logging.Level;
 
 public class onJoin implements Listener {
 
-    private final Reputation plugin;
+    private final ReputationMain plugin;
 
-    public onJoin(Reputation plugin) {
+    public onJoin(ReputationMain plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }

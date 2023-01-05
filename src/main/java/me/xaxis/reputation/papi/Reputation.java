@@ -2,6 +2,7 @@ package me.xaxis.reputation.papi;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.xaxis.reputation.ReputationMain;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;

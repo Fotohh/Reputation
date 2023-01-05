@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -60,14 +61,14 @@ public class ReputationCommand implements CommandExecutor {
                 return true;
             }
 
-            if(!TimeIsUp(player.getUniqueId())){
-                long timeInSeconds = Math.abs(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - plugin.getTimestamp().get(player.getUniqueId())));
-                String msg = Lang.PLAYER_CMD_TIMEOUT.getMsg(plugin).replace("%time_left%",String.valueOf(timeInSeconds));
+            if(!TimeIsUp(player)){
+                long timeInSeconds = Math.abs(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - plugin.getSqliteUtility().getTimestamp(player)));
+                String msg = Lang.PLAYER_CMD_TIMEOUT.getMsg(plugin).replace("%time_left%",new Date(timeInSeconds).toString());
                 player.sendMessage(Chat.color(msg, player));
                 return true;
             }
 
-            createPlayerTimestamp(player.getUniqueId());
+            createPlayerTimestamp(player);
 
             switch (args[1]){
                 case "like" ->{
@@ -125,23 +126,23 @@ public class ReputationCommand implements CommandExecutor {
         return true;
     }
 
-    private void createPlayerTimestamp(UUID uuid){
-        Long currentTime = System.currentTimeMillis();
+    private void createPlayerTimestamp(Player player){
+        long currentTime = System.currentTimeMillis();
         long waitTime = TimeUnit.SECONDS.toMillis(plugin.getConfig().getLong("execute-cmd-timeout"));
         long totalTime = currentTime+waitTime;
-        plugin.getTimestamp().putIfAbsent(uuid,totalTime);
+        plugin.getSqliteUtility().createTimestamp(player, currentTime);
     }
 
     /**
-     * @param uuid Player UUID
+     * @param player Player you want to check
      * @return true if time is up, false if it isn't
      */
-    private boolean TimeIsUp(UUID uuid){
-        if(!plugin.getTimestamp().containsKey(uuid)) return true;
+    private boolean TimeIsUp(Player player){
+        if(plugin.getSqliteUtility().getTimestamp(player) == 0) return true;
         long currentTime = System.currentTimeMillis();
-        long totalTime = plugin.getTimestamp().get(uuid);
+        long totalTime = plugin.getSqliteUtility().getTimestamp(player);
         if(currentTime>=totalTime){
-            plugin.getTimestamp().remove(uuid);
+            plugin.getSqliteUtility().createTimestamp(player, 0L);
             return true;
         }else return false;
     }

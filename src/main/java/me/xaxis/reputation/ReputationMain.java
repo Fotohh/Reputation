@@ -15,12 +15,6 @@ public final class ReputationMain extends JavaPlugin {
 
     //d9f6734f-85f7-4133-9f10-8aa54542b06c
 
-    private final HashMap<UUID,Long> timestamp = new HashMap<>();
-
-    public HashMap<UUID, Long> getTimestamp() {
-        return timestamp;
-    }
-
     //CORRECT SOLUTION: Score = Lower bound of Wilson score confidence interval for a Bernoulli parameter (for ratio)
     //https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval
     //https://www.evanmiller.org/how-not-to-sort-by-average-rating.html
@@ -28,10 +22,7 @@ public final class ReputationMain extends JavaPlugin {
     private SqliteUtility sqliteUtility;
 
     public SqliteUtility getSqliteUtility() {
-        if(sqliteUtility != null) {
-            return sqliteUtility;
-        }
-        return null;
+        if(sqliteUtility != null) return sqliteUtility; else return new SqliteUtility(this);
     }
 
     @Override

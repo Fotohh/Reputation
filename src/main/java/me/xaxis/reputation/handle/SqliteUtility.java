@@ -8,6 +8,7 @@ import java.io.File;
 import java.sql.*;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 
 public class SqliteUtility {
@@ -58,7 +59,7 @@ public class SqliteUtility {
                          dislikes INT NOT NULL,
                          total INT NOT NULL,
                          ratio FLOAT NOT NULL,
-                         capacity INT NOT NULL
+                         plts long NOT NULL
                         );""");
                 stmt.close();
             } catch (SQLException e) {
@@ -72,14 +73,14 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement pstmt = connection.prepareStatement(
-                        "insert into reputation (uuid, likes, dislikes, total, ratio, capacity) " +
+                        "insert into reputation (uuid, likes, dislikes, total, ratio, plts) " +
                                 "values (?,?,?,?,?,?) on conflict do nothing;");
                 pstmt.setString(1, uuid.toString());
                 pstmt.setInt(2, 0);
                 pstmt.setInt(3, 0);
                 pstmt.setInt(4, 0);
                 pstmt.setFloat(5, 0);
-                pstmt.setInt(6, 69696969);
+                pstmt.setLong(6, 0);
                 pstmt.executeUpdate();
                 pstmt.close();
             } catch (SQLException e) {
@@ -130,6 +131,38 @@ public class SqliteUtility {
         });
 
         return integer.get();
+    }
+
+    public long getTimestamp(Player player){
+        AtomicLong l = new AtomicLong(0);
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
+            try{
+                PreparedStatement stmt = connection.prepareStatement(
+                        "SELECT plts from reputation where uuid = ?;"
+                );
+                stmt.setString(1, player.getUniqueId().toString());
+                stmt.execute();
+                l.set(stmt.getResultSet().getLong("plts"));
+            } catch (SQLException e) {
+                throw new RuntimeException("Unable to get timestamp for "+player.getName(),e);
+            }
+        });
+        return l.get();
+    }
+
+    public void createTimestamp(Player player, long currentTimestamp){
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
+            try{
+                PreparedStatement stmt = connection.prepareStatement(
+                        "UPDATE reputation set plts = ? where uuid = ?;"
+                );
+                stmt.setLong(1, currentTimestamp);
+                stmt.setString(2, player.getUniqueId().toString());
+                stmt.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException("Unable to create timestamp for "+ player.getName(), e);
+            }
+        });
     }
 
     private void updateValues(Player player) throws SQLException {

@@ -7,6 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.sql.SQLException;
+
 public class onJoin implements Listener {
 
     private final ReputationMain plugin;
@@ -21,8 +23,12 @@ public class onJoin implements Listener {
         Player player = event.getPlayer();
         plugin.getSqliteUtility().createPlayerReputationEntry(player.getUniqueId());
         plugin.getServer().getScheduler().runTaskLater(plugin, ()->{
-            if(!PlayerReputationManager.containsPlayer(player)) {
-                new PlayerReputationManager(player, plugin);
+            if(!PlayerReputationManager.containsPlayer(player.getUniqueId())) {
+                try {
+                    new PlayerReputationManager(player.getUniqueId(), plugin).cacheData();
+                } catch (SQLException e) {
+                    throw new RuntimeException("Unable to register player reputation manager!",e);
+                }
             }
         }, 80);
     }

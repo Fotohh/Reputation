@@ -8,6 +8,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.logging.Level;
 
@@ -27,7 +28,13 @@ public class CommandExecute implements Listener {
         if(list.length > 2) {
             Player player = Bukkit.getPlayer(list[1]);
             if(player == null) return;
-            plugin.getServer().getScheduler().runTaskLater(plugin,()->PlayerReputationManager.getPlayerReputationManager(player).cacheData(), 40);
+            plugin.getServer().getScheduler().runTaskLater(plugin,()-> {
+                try {
+                    PlayerReputationManager.getPlayerReputationManager(player.getUniqueId()).cacheData();
+                } catch (SQLException e) {
+                    throw new RuntimeException("Unable to cache player data",e);
+                }
+            }, 40);
         }
     }
 }

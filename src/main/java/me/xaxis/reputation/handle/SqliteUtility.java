@@ -1,19 +1,16 @@
 package me.xaxis.reputation.handle;
 
 import me.xaxis.reputation.ReputationMain;
-import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.sql.*;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 
 public class SqliteUtility {
 
     private static String URL;
-    private final Plugin plugin;
+    private final ReputationMain plugin;
     private Connection connection;
 
     public SqliteUtility(ReputationMain plugin){
@@ -83,23 +80,22 @@ public class SqliteUtility {
 
     }
 
-    public long getTimestamp(UUID uuid){
-        AtomicLong l = new AtomicLong(0);
+    public long getTimestamp(UUID uuid) throws SQLException {
+        PlayerReputationManager m = new PlayerReputationManager(uuid,plugin);
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "SELECT plts from table ( reputation ) where uuid = ?"
+                        "SELECT reputation.plts from reputation where uuid = ?"
                 );
                 stmt.setString(1, uuid.toString());
-                stmt.execute();
-                ResultSet s = stmt.getResultSet();
-                l.set(s.getLong("plts"));
+                ResultSet s = stmt.executeQuery();
+                m.setTimestamp(s.getLong("plts"));
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException("Unable to get timestamp from database ",e);
             }
         });
-        return l.get();
+        return m.getPlayerTimestamp();
     }
 
     public void setTimestamp(UUID uuid, long currentTimestamp){
@@ -185,46 +181,52 @@ public class SqliteUtility {
         });
     }
 
-    public int getLikes(UUID uuid){
+    public int getLikes(UUID uuid) throws SQLException {
 
-        AtomicInteger likes = new AtomicInteger();
+        PlayerReputationManager m = new PlayerReputationManager(uuid,plugin);
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "SELECT likes from table ( reputation ) where uuid = ?" //TODO error
+                        "SELECT reputation.likes from reputation where uuid = ?"
                 );
-                stmt.setString(1, uuid.toString()); //TODO error
-                stmt.execute();
-                likes.set(stmt.getResultSet().getInt("likes")); //TODO error
+                stmt.setString(1, uuid.toString());
+
+                ResultSet s = stmt.executeQuery();
+
+                m.setLikes(s.getInt("likes"));
+
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException("Unable to get likes from database ",e);
             }
         });
 
-        return likes.get();
+        return m.getLikes();
     }
 
-    public int getDislikes(UUID uuid){
+    public int getDislikes(UUID uuid) throws SQLException {
 
-        AtomicInteger dislikes = new AtomicInteger();
+        PlayerReputationManager m = new PlayerReputationManager(uuid,plugin);
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "SELECT dislikes from table ( reputation ) where uuid = ?" //TODO error
+                        "select reputation.dislikes from reputation where uuid = ?"
                 );
-                stmt.setString(1, uuid.toString()); //TODO error
-                stmt.execute();
-                dislikes.set(stmt.getResultSet().getInt("dislikes")); //TODO error
+                stmt.setString(1, uuid.toString());
+
+                ResultSet s = stmt.executeQuery();
+
+                m.setDislikes(s.getInt("dislikes"));
+
                 stmt.close();
             } catch (SQLException e) {
                 throw new RuntimeException("Unable to get dislikes from SQL Database",e);
             }
         });
 
-        return dislikes.get();
+        return m.getDislikes();
     }
 
     private void create() {

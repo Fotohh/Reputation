@@ -62,7 +62,7 @@ public class Reputation extends PlaceholderExpansion {
     @Override
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         if(player == null) return "";
-        PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(player);
+        PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(player.getUniqueId());
 
         switch (params){
             case "total"->{

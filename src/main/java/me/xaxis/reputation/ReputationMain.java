@@ -51,7 +51,11 @@ public final class ReputationMain extends JavaPlugin {
         if(getServer().getOnlinePlayers().isEmpty()) return;
         getServer().getScheduler().runTaskLater(this, ()->{
             for(Player player : getServer().getOnlinePlayers()){
-                new PlayerReputationManager(player, this);
+                try {
+                    new PlayerReputationManager(player.getUniqueId(), this).cacheData();
+                } catch (SQLException e) {
+                    throw new RuntimeException("Unable to register player reputation manager!",e);
+                }
             }
             getLogger().log(Level.INFO, "Successfully cached player data!");
         },80);

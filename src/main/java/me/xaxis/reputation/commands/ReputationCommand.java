@@ -37,7 +37,7 @@ public class ReputationCommand implements CommandExecutor {
             return true;
         }
 
-        PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(player);
+        PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(player.getUniqueId());
 
         plugin.getSqliteUtility().createPlayerReputationEntry(player.getUniqueId());
 
@@ -143,9 +143,9 @@ public class ReputationCommand implements CommandExecutor {
      * @return true if time is up, false if it isn't
      */
     private boolean TimeIsUp(Player player){
-        if(PlayerReputationManager.getPlayerReputationManager(player).getPlayerTimestamp() == 0) return true;
+        if(PlayerReputationManager.getPlayerReputationManager(player.getUniqueId()).getPlayerTimestamp() == 0) return true;
         long currentTime = System.currentTimeMillis();
-        long totalTime = PlayerReputationManager.getPlayerReputationManager(player).getPlayerTimestamp();
+        long totalTime = PlayerReputationManager.getPlayerReputationManager(player.getUniqueId()).getPlayerTimestamp();
         if(currentTime>=totalTime){
             plugin.getSqliteUtility().setTimestamp(player.getUniqueId(), 0L);
             return true;

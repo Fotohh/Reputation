@@ -2,8 +2,8 @@ package me.xaxis.reputation.handle;
 
 import me.xaxis.reputation.ReputationMain;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
@@ -11,7 +11,7 @@ import java.util.logging.Level;
 
 public class PlayerReputationManager{
 
-    private final Player player;
+    private final UUID uuid;
     private final ReputationMain plugin;
     private int total;
     private int likes;
@@ -22,18 +22,29 @@ public class PlayerReputationManager{
 
     private static HashMap<UUID,PlayerReputationManager> map = new HashMap<>();
 
-    public static PlayerReputationManager getPlayerReputationManager(Player player){
-        return map.get(player.getUniqueId());
+    public static PlayerReputationManager getPlayerReputationManager(UUID uuid){
+        return map.get(uuid);
     }
-    public static boolean containsPlayer(Player player){
-        return map.containsKey(player.getUniqueId());
+    public static boolean containsPlayer(UUID uuid){
+        return map.containsKey(uuid);
     }
 
-    public PlayerReputationManager(Player player, ReputationMain plugin) {
-        this.player = player;
+    public PlayerReputationManager(UUID uuid, ReputationMain plugin) throws SQLException {
+        this.uuid = uuid;
         this.plugin = plugin;
-        map.put(player.getUniqueId(), this);
-        cacheData();
+        map.putIfAbsent(uuid, this);
+    }
+
+    public void setDislikes(int dislikes) {
+        this.dislikes = dislikes;
+    }
+
+    public void setLikes(int likes) {
+        this.likes = likes;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public int getTotal() {
@@ -57,7 +68,7 @@ public class PlayerReputationManager{
         return timestamp;
     }
 
-    public void cacheData(){
+    public void cacheData() throws SQLException {
         cacheLikes();
         cacheDislikes();
         cacheTotal();
@@ -69,11 +80,11 @@ public class PlayerReputationManager{
     private void cacheTotal(){
         this.total = likes+dislikes;
     }
-    private void cacheLikes(){
-        this.likes = plugin.getSqliteUtility().getLikes(player.getUniqueId());
+    private void cacheLikes() throws SQLException {
+        this.likes = plugin.getSqliteUtility().getLikes(uuid);
     }
-    private void cacheDislikes(){
-        this.dislikes = plugin.getSqliteUtility().getDislikes(player.getUniqueId());
+    private void cacheDislikes() throws SQLException {
+        this.dislikes = plugin.getSqliteUtility().getDislikes(uuid);
     }
     private void cachePercentage(){
         double min = Math.min(likes,dislikes);
@@ -120,7 +131,7 @@ public class PlayerReputationManager{
 
         }
     }
-    private void cacheTimestamp(){
-        this.timestamp = plugin.getSqliteUtility().getTimestamp(player.getUniqueId());
+    private void cacheTimestamp() throws SQLException {
+        this.timestamp = plugin.getSqliteUtility().getTimestamp(uuid);
     }
 }

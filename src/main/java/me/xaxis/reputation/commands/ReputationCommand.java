@@ -37,9 +37,6 @@ public class ReputationCommand implements CommandExecutor {
             return true;
         }
 
-        PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(player.getUniqueId());
-
-        plugin.getSqliteUtility().createPlayerReputationEntry(player.getUniqueId());
 
         if(args.length == 0){
             //TODO This will be a help cmd
@@ -52,8 +49,12 @@ public class ReputationCommand implements CommandExecutor {
                 player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin).replace("%player_name_offline%",args[0]), target));
                 return true;
             }
+            PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(target.getUniqueId());
             player.sendMessage(Chat.color(Lang.PLAYER_REPUTATION.getMsg(plugin), target));
-            player.sendMessage(Chat.color("Total: "+info.getTotal() + " Likes: "+info.getLikes() +" Dislikes: "+info.getDislikes()+ " Ratio: "+info.getPercentage()+ " Color: "+info.getColor() + " Timestamp: "+info.getPlayerTimestamp(), target));
+            player.sendMessage(Chat.color("Total: "+info.getTotal() +
+                    " Likes: "+info.getLikes() +" Dislikes: "+info.getDislikes()+
+                    " Ratio: "+info.getPercentage()+ " Color: "+info.getColor() +
+                    " Timestamp: "+info.getPlayerTimestamp(), target));
 
             return true;
         }
@@ -66,6 +67,8 @@ public class ReputationCommand implements CommandExecutor {
                 return true;
             }
 
+            PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(target.getUniqueId());
+
             if(!TimeIsUp(player)){
                 long timeInSeconds = Math.abs(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - info.getPlayerTimestamp()));
                 String msg = Lang.PLAYER_CMD_TIMEOUT.getMsg(plugin).replace("%time_left%",new Date(timeInSeconds).toString());
@@ -77,11 +80,11 @@ public class ReputationCommand implements CommandExecutor {
 
             switch (args[1]){
                 case "like" ->{
-                    plugin.getSqliteUtility().addLike(player.getUniqueId(), plugin.getConfig().getInt("like_amt"));
+                    info.setLikes(info.getLikes()+plugin.getConfig().getInt("like_amt"));
                     player.sendMessage(Chat.color(Lang.LIKED_PLAYER.getMsg(plugin),target));
                 }
                 case "dislike" ->{
-                    plugin.getSqliteUtility().addDislike(player.getUniqueId(), plugin.getConfig().getInt("dislike_amt"));
+                    info.setDislikes(info.getDislikes()+plugin.getConfig().getInt("dislike_amt"));
                     player.sendMessage(Chat.color(Lang.DISLIKED_PLAYER.getMsg(plugin), target));
                 }
             }
@@ -97,6 +100,8 @@ public class ReputationCommand implements CommandExecutor {
                 return true;
             }
 
+            PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(target.getUniqueId());
+
             int amount;
             try{
                 amount = Integer.parseInt(args[3]);
@@ -108,12 +113,12 @@ public class ReputationCommand implements CommandExecutor {
 
             switch (args[2]){
                 case "like"->{
-                    plugin.getSqliteUtility().setLikes(target.getUniqueId(), amount);
+                    info.setLikes(amount);
                     String msg = Lang.SET_PLAYER_LIKES.getMsg(plugin).replace("%amount_integer%",String.valueOf(amount));
                     player.sendMessage(Chat.color(msg,target));
                 }
                 case "dislike"->{
-                    plugin.getSqliteUtility().setDislikes(target.getUniqueId(), amount);
+                    info.setDislikes(amount);
                     String msg = Lang.SET_PLAYER_DISLIKES.getMsg(plugin).replace("%amount_integer%",String.valueOf(amount));
                     player.sendMessage(Chat.color(msg,target));
                 }
@@ -132,10 +137,11 @@ public class ReputationCommand implements CommandExecutor {
     }
 
     private void createPlayerTimestamp(Player player){
+        PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(player.getUniqueId());
         long currentTime = System.currentTimeMillis();
         long waitTime = TimeUnit.SECONDS.toMillis(plugin.getConfig().getLong("execute-cmd-timeout"));
         long totalTime = currentTime+waitTime;
-        plugin.getSqliteUtility().setTimestamp(player.getUniqueId(), currentTime);
+        info.setTimestamp(totalTime);
     }
 
     /**
@@ -143,11 +149,12 @@ public class ReputationCommand implements CommandExecutor {
      * @return true if time is up, false if it isn't
      */
     private boolean TimeIsUp(Player player){
-        if(PlayerReputationManager.getPlayerReputationManager(player.getUniqueId()).getPlayerTimestamp() == 0) return true;
+        PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(player.getUniqueId());
+        if(info.getPlayerTimestamp() == 0) return true;
         long currentTime = System.currentTimeMillis();
         long totalTime = PlayerReputationManager.getPlayerReputationManager(player.getUniqueId()).getPlayerTimestamp();
         if(currentTime>=totalTime){
-            plugin.getSqliteUtility().setTimestamp(player.getUniqueId(), 0L);
+            info.setTimestamp(0);
             return true;
         }else return false;
     }

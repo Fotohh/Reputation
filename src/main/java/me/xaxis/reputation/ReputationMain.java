@@ -7,13 +7,11 @@ import me.xaxis.reputation.events.onJoin;
 import me.xaxis.reputation.handle.PlayerReputationManager;
 import me.xaxis.reputation.handle.SqliteUtility;
 import me.xaxis.reputation.papi.Reputation;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.SQLException;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public final class ReputationMain extends JavaPlugin {
@@ -58,17 +56,32 @@ public final class ReputationMain extends JavaPlugin {
                 }
             }
             getLogger().log(Level.INFO, "Successfully cached player data!");
-        },80);
+        },40);
     }
 
 
 
     @Override
     public void onDisable() {
-        try {
-            sqliteUtility.disconnect();
-        } catch (SQLException e) {
-            getLogger().log(Level.SEVERE, "Unable to disconnect from SQLite Server");
+
+        getLogger().log(Level.INFO, "Saving Player Data...");
+
+        getServer().getScheduler().runTaskAsynchronously(this, this::savePlayerDataToSqlite);
+
+        getServer().getScheduler().runTaskLaterAsynchronously(this, ()->{
+            getLogger().log(Level.INFO,"Disconnecting from Sqlite database");
+            try {
+                sqliteUtility.disconnect();
+            } catch (SQLException e) {
+                getLogger().log(Level.SEVERE, "Unable to disconnect from SQLite Server");
+            }
+        },2);
+
+    }
+
+    private void savePlayerDataToSqlite(){
+        for (UUID uuid : PlayerReputationManager.getMap().keySet()){
+            PlayerReputationManager.getPlayerReputationManager(uuid).saveData();
         }
     }
 }

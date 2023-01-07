@@ -13,14 +13,16 @@ public class PlayerReputationManager{
 
     private final UUID uuid;
     private final ReputationMain plugin;
-    private int total;
     private int likes;
     private int dislikes;
-    private double percentage;
     private String color;
     private long timestamp;
 
-    private static HashMap<UUID,PlayerReputationManager> map = new HashMap<>();
+    private static final HashMap<UUID,PlayerReputationManager> map = new HashMap<>();
+
+    public static HashMap<UUID, PlayerReputationManager> getMap() {
+        return map;
+    }
 
     public static PlayerReputationManager getPlayerReputationManager(UUID uuid){
         return map.get(uuid);
@@ -32,17 +34,22 @@ public class PlayerReputationManager{
     public PlayerReputationManager(UUID uuid, ReputationMain plugin) throws SQLException {
         this.uuid = uuid;
         this.plugin = plugin;
+        plugin.getSqliteUtility().createPlayerReputationEntry(uuid);
         map.putIfAbsent(uuid, this);
+    }
+
+    public void saveData(){
+        plugin.getSqliteUtility().setDislikes(uuid,dislikes);
+        plugin.getSqliteUtility().setLikes(uuid,likes);
+        plugin.getSqliteUtility().setTimestamp(uuid,timestamp);
     }
 
     public void setDislikes(int dislikes) {
         this.dislikes = dislikes;
     }
-
     public void setLikes(int likes) {
         this.likes = likes;
     }
-
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
@@ -71,26 +78,14 @@ public class PlayerReputationManager{
     public void cacheData() throws SQLException {
         cacheLikes();
         cacheDislikes();
-        cacheTotal();
-        cachePercentage();
         cacheColor();
         cacheTimestamp();
-    }
-
-    private void cacheTotal(){
-        this.total = likes+dislikes;
     }
     private void cacheLikes() throws SQLException {
         this.likes = plugin.getSqliteUtility().getLikes(uuid);
     }
     private void cacheDislikes() throws SQLException {
         this.dislikes = plugin.getSqliteUtility().getDislikes(uuid);
-    }
-    private void cachePercentage(){
-        double min = Math.min(likes,dislikes);
-        double max = Math.max(likes,dislikes);
-
-        this.percentage = min/max*100;
     }
     private void cacheColor(){
         ConfigurationSection section = plugin.getConfig().getConfigurationSection("thresholds");

@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.sql.SQLException;
+import java.util.UUID;
 
 public class onJoin implements Listener {
 
@@ -20,16 +21,17 @@ public class onJoin implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event){
-        Player player = event.getPlayer();
-        plugin.getSqliteUtility().createPlayerReputationEntry(player.getUniqueId());
-        plugin.getServer().getScheduler().runTaskLater(plugin, ()->{
-            if(!PlayerReputationManager.containsPlayer(player.getUniqueId())) {
+        UUID uuid = event.getPlayer().getUniqueId();
+        plugin.getSqliteUtility().createPlayerReputationEntry(uuid);
+
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
+            if(!PlayerReputationManager.containsPlayer(uuid)) {
                 try {
-                    new PlayerReputationManager(player.getUniqueId(), plugin).cacheData();
+                    new PlayerReputationManager(uuid, plugin).cacheData();
                 } catch (SQLException e) {
                     throw new RuntimeException("Unable to register player reputation manager!",e);
                 }
             }
-        }, 80);
+        });
     }
 }

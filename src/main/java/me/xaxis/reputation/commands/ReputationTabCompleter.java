@@ -23,9 +23,7 @@ public class ReputationTabCompleter implements TabCompleter {
         //reputation <name> set like/dislike 0
         //reputation <name> like|dislikes
 
-        if(sender instanceof Player){
-
-            Player p = (Player) sender;
+        if(sender instanceof Player p){
 
             if(args.length == 2){
                 commands.add("like");

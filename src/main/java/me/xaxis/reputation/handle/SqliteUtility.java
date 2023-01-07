@@ -38,7 +38,7 @@ public class SqliteUtility {
 
     private void createTable(){
         plugin.getLogger().log(Level.INFO, "Preparing to initialize table...");
-        plugin.getServer().getScheduler().runTaskLaterAsynchronously(plugin, ()->{
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             plugin.getLogger().log(Level.INFO, "Initializing...");
             try{
                 while(connection == null){
@@ -58,7 +58,7 @@ public class SqliteUtility {
             } catch (SQLException e) {
                 throw new RuntimeException("Unable to create table", e);
             }
-        },2);
+        });
     }
 
     public void createPlayerReputationEntry(UUID uuid){
@@ -195,6 +195,7 @@ public class SqliteUtility {
                 ResultSet s = stmt.executeQuery();
 
                 m.setLikes(s.getInt("likes"));
+                plugin.getLogger().log(Level.INFO,String.valueOf(m.getLikes()));
 
                 stmt.close();
             } catch (SQLException e) {

@@ -71,13 +71,13 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement pstmt = connection.prepareStatement(
-                        "insert into reputation (uuid, likes, dislikes, total, ratio, plts) values (?,?,?,?,?,?) on conflict do nothing;");
+                        "insert into reputation (uuid, likes, dislikes, total, ratio, plts) values (?,?,?,?,?,?) on conflict do nothing");
                 pstmt.setString(1, uuid.toString());
-                pstmt.setInt(2, 1);
-                pstmt.setInt(3, 1);
-                pstmt.setInt(4, 1);
-                pstmt.setFloat(5, 0.1f);
-                pstmt.setLong(6, 1L);
+                pstmt.setInt(2, 0);
+                pstmt.setInt(3, 0);
+                pstmt.setInt(4, 0);
+                pstmt.setFloat(5, 0f);
+                pstmt.setLong(6, 0L);
                 pstmt.executeUpdate();
                 pstmt.close();
             } catch (SQLException e) {
@@ -135,7 +135,7 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "SELECT plts from reputation where uuid = ?;"
+                        "SELECT plts from reputation where uuid = ?"
                 );
                 stmt.setString(1, uuid.toString());
                 stmt.execute();
@@ -151,7 +151,7 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "UPDATE reputation set plts = ? where uuid = ?;"
+                        "UPDATE reputation set plts = ? where uuid = ?"
                 );
                 stmt.setLong(1, currentTimestamp);
                 stmt.setString(2, uuid.toString());
@@ -165,14 +165,14 @@ public class SqliteUtility {
     private void updateValues(UUID uuid) throws SQLException {
 
         PreparedStatement stmt = connection.prepareStatement(
-                "UPDATE reputation set total = likes + dislikes where uuid = ?;"
+                "UPDATE reputation set total = likes + dislikes where uuid = ?"
         );
         stmt.setString(1, uuid.toString());
         stmt.executeUpdate();
         stmt.close();
 
         PreparedStatement stmt2 = connection.prepareStatement(
-                "SELECT likes from reputation where uuid = ?;"
+                "SELECT likes from reputation where uuid = ?"
         );
         stmt2.setString(1, uuid.toString());
         stmt2.execute();
@@ -180,7 +180,7 @@ public class SqliteUtility {
         stmt2.close();
 
         PreparedStatement stmt3 = connection.prepareStatement(
-                "SELECT dislikes from reputation where uuid = ?;"
+                "SELECT dislikes from reputation where uuid = ?"
         );
         stmt3.setString(1, uuid.toString());
         stmt3.execute();
@@ -190,7 +190,7 @@ public class SqliteUtility {
         double max = Math.max(likes,dislikes);
         double min = Math.min(likes,dislikes);
         PreparedStatement s = connection.prepareStatement(
-                "UPDATE reputation set ratio = ?/?*100.0 where uuid = ?;"
+                "UPDATE reputation set ratio = ?/?*100.0 where uuid = ?"
         );
         s.setDouble(1, min);
         s.setDouble(2, max);
@@ -205,7 +205,7 @@ public class SqliteUtility {
             try{
                 PreparedStatement stmt = connection.prepareStatement(
                         """
-                                update reputation set likes = reputation.likes + ? where uuid = ?;"""
+                                update reputation set likes = reputation.likes + ? where uuid = ?"""
                 );
                 stmt.setInt(1, i);
                 stmt.setString(2, uuid.toString());
@@ -223,7 +223,7 @@ public class SqliteUtility {
             try{
                 PreparedStatement stmt = connection.prepareStatement(
                         """
-                                update reputation set dislikes = reputation.dislikes + ? where uuid = ?;"""
+                                update reputation set dislikes = reputation.dislikes + ? where uuid = ?"""
                 );
                 stmt.setInt(1, i);
                 stmt.setString(2, uuid.toString());
@@ -241,7 +241,7 @@ public class SqliteUtility {
             try{
                 PreparedStatement stmt = connection.prepareStatement(
                         """
-                                UPDATE reputation SET dislikes = ? where uuid = ?;"""
+                                UPDATE reputation SET dislikes = ? where uuid = ?"""
                 );
                 stmt.setInt(1, i);
                 stmt.setString(2, uuid.toString());
@@ -258,7 +258,7 @@ public class SqliteUtility {
             try{
                 PreparedStatement stmt = connection.prepareStatement(
                         """
-                                update reputation set likes = ? where uuid = ?;
+                                update reputation set likes = ? where uuid = ?
                                 """
                 );
                 stmt.setInt(1, i);

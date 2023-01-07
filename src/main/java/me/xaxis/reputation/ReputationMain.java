@@ -48,6 +48,7 @@ public final class ReputationMain extends JavaPlugin {
         new onJoin(this);
         new CommandExecute(this);
 
+        if(getServer().getOnlinePlayers().isEmpty()) return;
         getServer().getScheduler().runTaskLater(this, ()->{
             for(Player player : getServer().getOnlinePlayers()){
                 new PlayerReputationManager(player, this);

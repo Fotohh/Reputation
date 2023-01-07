@@ -66,19 +66,15 @@ public class Reputation extends PlaceholderExpansion {
 
         switch (params){
             case "total"->{
-                player.getServer().getLogger().log(Level.INFO, "total "+info.getTotal());
                 return String.valueOf(info.getTotal());
             }
             case "likes"->{
-                player.getServer().getLogger().log(Level.INFO, "likes "+info.getLikes());
                 return String.valueOf(info.getLikes());
             }
             case "dislikes"->{
-                player.getServer().getLogger().log(Level.INFO, "dislikes "+info.getDislikes());
                 return String.valueOf(info.getDislikes());
             }
             case "percentage"->{
-                player.getServer().getLogger().log(Level.INFO, "percentage "+info.getPercentage());
                 return String.valueOf(info.getPercentage());
             }
             case "color"->{

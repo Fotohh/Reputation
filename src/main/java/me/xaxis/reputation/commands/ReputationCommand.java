@@ -54,11 +54,6 @@ public class ReputationCommand implements CommandExecutor {
             }
             player.sendMessage(Chat.color(Lang.PLAYER_REPUTATION.getMsg(plugin), target));
             player.sendMessage(Chat.color("Total: "+info.getTotal() + " Likes: "+info.getLikes() +" Dislikes: "+info.getDislikes()+ " Ratio: "+info.getPercentage()+ " Color: "+info.getColor() + " Timestamp: "+info.getPlayerTimestamp(), target));
-            player.sendMessage(Chat.color("Total: "+plugin.getSqliteUtility().getTotalReputation(player.getUniqueId()) +
-                    " Likes: "+plugin.getSqliteUtility().getLikes(player.getUniqueId())
-                    +" Dislikes: "+plugin.getSqliteUtility().getDislikes(player.getUniqueId())+
-                    " Ratio: "+plugin.getSqliteUtility().getRatio(player.getUniqueId())+
-                    " Timestamp: "+plugin.getSqliteUtility().getTimestamp(player.getUniqueId()), target));
 
             return true;
         }
@@ -140,7 +135,7 @@ public class ReputationCommand implements CommandExecutor {
         long currentTime = System.currentTimeMillis();
         long waitTime = TimeUnit.SECONDS.toMillis(plugin.getConfig().getLong("execute-cmd-timeout"));
         long totalTime = currentTime+waitTime;
-        plugin.getSqliteUtility().createTimestamp(player.getUniqueId(), currentTime);
+        plugin.getSqliteUtility().setTimestamp(player.getUniqueId(), currentTime);
     }
 
     /**
@@ -152,7 +147,7 @@ public class ReputationCommand implements CommandExecutor {
         long currentTime = System.currentTimeMillis();
         long totalTime = PlayerReputationManager.getPlayerReputationManager(player).getPlayerTimestamp();
         if(currentTime>=totalTime){
-            plugin.getSqliteUtility().createTimestamp(player.getUniqueId(), 0L);
+            plugin.getSqliteUtility().setTimestamp(player.getUniqueId(), 0L);
             return true;
         }else return false;
     }

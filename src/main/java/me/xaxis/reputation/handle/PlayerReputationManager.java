@@ -37,7 +37,7 @@ public class PlayerReputationManager{
     }
 
     public int getTotal() {
-        return total;
+        return likes+dislikes;
     }
     public int getDislikes() {
         return dislikes;
@@ -46,7 +46,9 @@ public class PlayerReputationManager{
         return likes;
     }
     public double getPercentage() {
-        return percentage;
+        double min = Math.min(likes,dislikes);
+        double max = Math.max(likes,dislikes);
+        return min/max*100;
     }
     public String getColor() {
         return color;
@@ -56,16 +58,16 @@ public class PlayerReputationManager{
     }
 
     public void cacheData(){
-        cacheTotal();
-        cachePercentage();
         cacheLikes();
         cacheDislikes();
+        cacheTotal();
+        cachePercentage();
         cacheColor();
         cacheTimestamp();
     }
 
     private void cacheTotal(){
-        this.total = plugin.getSqliteUtility().getTotalReputation(player.getUniqueId());
+        this.total = likes+dislikes;
     }
     private void cacheLikes(){
         this.likes = plugin.getSqliteUtility().getLikes(player.getUniqueId());
@@ -74,7 +76,10 @@ public class PlayerReputationManager{
         this.dislikes = plugin.getSqliteUtility().getDislikes(player.getUniqueId());
     }
     private void cachePercentage(){
-        this.percentage = plugin.getSqliteUtility().getRatio(player.getUniqueId());
+        double min = Math.min(likes,dislikes);
+        double max = Math.max(likes,dislikes);
+
+        this.percentage = min/max*100;
     }
     private void cacheColor(){
         ConfigurationSection section = plugin.getConfig().getConfigurationSection("thresholds");

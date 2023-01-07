@@ -20,8 +20,10 @@ public class onJoin implements Listener {
     public void onPlayerJoin(PlayerJoinEvent event){
         Player player = event.getPlayer();
         plugin.getSqliteUtility().createPlayerReputationEntry(player.getUniqueId());
-        if(!PlayerReputationManager.containsPlayer(player)) {
-            new PlayerReputationManager(player, plugin);
-        }
+        plugin.getServer().getScheduler().runTaskLater(plugin, ()->{
+            if(!PlayerReputationManager.containsPlayer(player)) {
+                new PlayerReputationManager(player, plugin);
+            }
+        }, 80);
     }
 }

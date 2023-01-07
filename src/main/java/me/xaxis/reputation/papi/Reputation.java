@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 @SuppressWarnings("all")
 public class Reputation extends PlaceholderExpansion {
@@ -35,6 +36,19 @@ public class Reputation extends PlaceholderExpansion {
     }
 
     @Override
+    public @Nullable String getRequiredPlugin() {
+        return plugin.getName();
+    }
+    @Override
+    public boolean canRegister() {
+        return true;
+    }
+    @Override
+    public boolean persist() {
+        return true;
+    }
+
+    @Override
     public @NotNull List<String> getPlaceholders() {
         List<String> list = new ArrayList<>();
         list.add("total");
@@ -52,18 +66,23 @@ public class Reputation extends PlaceholderExpansion {
 
         switch (params){
             case "total"->{
+                player.getServer().getLogger().log(Level.INFO, "total "+info.getTotal());
                 return String.valueOf(info.getTotal());
             }
             case "likes"->{
+                player.getServer().getLogger().log(Level.INFO, "likes "+info.getLikes());
                 return String.valueOf(info.getLikes());
             }
             case "dislikes"->{
+                player.getServer().getLogger().log(Level.INFO, "dislikes "+info.getDislikes());
                 return String.valueOf(info.getDislikes());
             }
             case "percentage"->{
+                player.getServer().getLogger().log(Level.INFO, "percentage "+info.getPercentage());
                 return String.valueOf(info.getPercentage());
             }
             case "color"->{
+                player.getServer().getLogger().log(Level.INFO, "color "+info.getColor());
                 return String.valueOf(info.getColor());
             }
         }

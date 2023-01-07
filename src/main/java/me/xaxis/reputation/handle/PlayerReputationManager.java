@@ -65,16 +65,16 @@ public class PlayerReputationManager{
     }
 
     private void cacheTotal(){
-        this.total = plugin.getSqliteUtility().getTotalReputation(player);
+        this.total = plugin.getSqliteUtility().getTotalReputation(player.getUniqueId());
     }
     private void cacheLikes(){
-        this.likes = plugin.getSqliteUtility().getLikes(player);
+        this.likes = plugin.getSqliteUtility().getLikes(player.getUniqueId());
     }
     private void cacheDislikes(){
-        this.dislikes = plugin.getSqliteUtility().getDislikes(player);
+        this.dislikes = plugin.getSqliteUtility().getDislikes(player.getUniqueId());
     }
     private void cachePercentage(){
-        this.percentage = plugin.getSqliteUtility().getRatio(player);
+        this.percentage = plugin.getSqliteUtility().getRatio(player.getUniqueId());
     }
     private void cacheColor(){
         ConfigurationSection section = plugin.getConfig().getConfigurationSection("thresholds");
@@ -116,6 +116,6 @@ public class PlayerReputationManager{
         }
     }
     private void cacheTimestamp(){
-        this.timestamp = plugin.getSqliteUtility().getTimestamp(player);
+        this.timestamp = plugin.getSqliteUtility().getTimestamp(player.getUniqueId());
     }
 }

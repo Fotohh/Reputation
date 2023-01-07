@@ -53,6 +53,13 @@ public class ReputationCommand implements CommandExecutor {
                 return true;
             }
             player.sendMessage(Chat.color(Lang.PLAYER_REPUTATION.getMsg(plugin), target));
+            player.sendMessage(Chat.color("Total: "+info.getTotal() + " Likes: "+info.getLikes() +" Dislikes: "+info.getDislikes()+ " Ratio: "+info.getPercentage()+ " Color: "+info.getColor() + " Timestamp: "+info.getPlayerTimestamp(), target));
+            player.sendMessage(Chat.color("Total: "+plugin.getSqliteUtility().getTotalReputation(player.getUniqueId()) +
+                    " Likes: "+plugin.getSqliteUtility().getLikes(player.getUniqueId())
+                    +" Dislikes: "+plugin.getSqliteUtility().getDislikes(player.getUniqueId())+
+                    " Ratio: "+plugin.getSqliteUtility().getRatio(player.getUniqueId())+
+                    " Timestamp: "+plugin.getSqliteUtility().getTimestamp(player.getUniqueId()), target));
+
             return true;
         }
         if(args.length == 2){
@@ -75,11 +82,11 @@ public class ReputationCommand implements CommandExecutor {
 
             switch (args[1]){
                 case "like" ->{
-                    plugin.getSqliteUtility().addLike(player, plugin.getConfig().getInt("like_amt"));
+                    plugin.getSqliteUtility().addLike(player.getUniqueId(), plugin.getConfig().getInt("like_amt"));
                     player.sendMessage(Chat.color(Lang.LIKED_PLAYER.getMsg(plugin),target));
                 }
                 case "dislike" ->{
-                    plugin.getSqliteUtility().addDislike(player, plugin.getConfig().getInt("dislike_amt"));
+                    plugin.getSqliteUtility().addDislike(player.getUniqueId(), plugin.getConfig().getInt("dislike_amt"));
                     player.sendMessage(Chat.color(Lang.DISLIKED_PLAYER.getMsg(plugin), target));
                 }
             }
@@ -105,13 +112,13 @@ public class ReputationCommand implements CommandExecutor {
             }
 
             switch (args[2]){
-                case "likes"->{
-                    plugin.getSqliteUtility().setLikes(target, amount);
+                case "like"->{
+                    plugin.getSqliteUtility().setLikes(target.getUniqueId(), amount);
                     String msg = Lang.SET_PLAYER_LIKES.getMsg(plugin).replace("%amount_integer%",String.valueOf(amount));
                     player.sendMessage(Chat.color(msg,target));
                 }
-                case "dislikes"->{
-                    plugin.getSqliteUtility().setDislikes(target, amount);
+                case "dislike"->{
+                    plugin.getSqliteUtility().setDislikes(target.getUniqueId(), amount);
                     String msg = Lang.SET_PLAYER_DISLIKES.getMsg(plugin).replace("%amount_integer%",String.valueOf(amount));
                     player.sendMessage(Chat.color(msg,target));
                 }
@@ -133,7 +140,7 @@ public class ReputationCommand implements CommandExecutor {
         long currentTime = System.currentTimeMillis();
         long waitTime = TimeUnit.SECONDS.toMillis(plugin.getConfig().getLong("execute-cmd-timeout"));
         long totalTime = currentTime+waitTime;
-        plugin.getSqliteUtility().createTimestamp(player, currentTime);
+        plugin.getSqliteUtility().createTimestamp(player.getUniqueId(), currentTime);
     }
 
     /**
@@ -145,7 +152,7 @@ public class ReputationCommand implements CommandExecutor {
         long currentTime = System.currentTimeMillis();
         long totalTime = PlayerReputationManager.getPlayerReputationManager(player).getPlayerTimestamp();
         if(currentTime>=totalTime){
-            plugin.getSqliteUtility().createTimestamp(player, 0L);
+            plugin.getSqliteUtility().createTimestamp(player.getUniqueId(), 0L);
             return true;
         }else return false;
     }

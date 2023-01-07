@@ -50,10 +50,7 @@ public class ReputationCommand implements CommandExecutor {
             }
             PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(target.getUniqueId());
             player.sendMessage(Chat.color(Lang.PLAYER_REPUTATION.getMsg(plugin), target));
-            player.sendMessage(Chat.color("Total: "+info.getTotal() +
-                    " Likes: "+info.getLikes() +" Dislikes: "+info.getDislikes()+
-                    " Ratio: "+info.getPercentage()+ " Color: "+info.getColor() +
-                    " Timestamp: "+info.getPlayerTimestamp(), target));
+            player.sendMessage(info.toString());
 
             return true;
         }

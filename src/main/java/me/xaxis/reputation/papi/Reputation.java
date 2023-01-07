@@ -21,11 +21,6 @@ public class Reputation extends PlaceholderExpansion {
     }
 
     @Override
-    public boolean register() {
-        return true;
-    }
-
-    @Override
     public @NotNull String getIdentifier() {
         return "Reputation";
     }
@@ -42,6 +37,7 @@ public class Reputation extends PlaceholderExpansion {
 
     @Override
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
+        if(player == null) return "";
         switch (params){
             case "total"->{
                 return String.valueOf(plugin.getSqliteUtility().getTotalReputation(player));

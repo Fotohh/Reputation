@@ -1,6 +1,7 @@
 package me.xaxis.reputation;
 
 import me.xaxis.reputation.commands.ReputationCommand;
+import me.xaxis.reputation.commands.ReputationTabCompleter;
 import me.xaxis.reputation.events.onJoin;
 import me.xaxis.reputation.handle.SqliteUtility;
 import me.xaxis.reputation.papi.Reputation;
@@ -39,6 +40,7 @@ public final class ReputationMain extends JavaPlugin {
 
         new ReputationCommand(this);
         new Reputation(this).register();
+        getCommand("reputation").setTabCompleter(new ReputationTabCompleter());
         new onJoin(this);
 
     }

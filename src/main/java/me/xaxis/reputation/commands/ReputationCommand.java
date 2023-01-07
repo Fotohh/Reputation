@@ -3,6 +3,7 @@ package me.xaxis.reputation.commands;
 import me.xaxis.reputation.Lang;
 import me.xaxis.reputation.ReputationMain;
 import me.xaxis.reputation.colorchat.Chat;
+import me.xaxis.reputation.handle.PlayerReputationManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -36,6 +37,8 @@ public class ReputationCommand implements CommandExecutor {
             return true;
         }
 
+        PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(player);
+
         plugin.getSqliteUtility().createPlayerReputationEntry(player.getUniqueId());
 
         if(args.length == 0){
@@ -62,7 +65,7 @@ public class ReputationCommand implements CommandExecutor {
             }
 
             if(!TimeIsUp(player)){
-                long timeInSeconds = Math.abs(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - plugin.getSqliteUtility().getTimestamp(player)));
+                long timeInSeconds = Math.abs(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - info.getPlayerTimestamp()));
                 String msg = Lang.PLAYER_CMD_TIMEOUT.getMsg(plugin).replace("%time_left%",new Date(timeInSeconds).toString());
                 player.sendMessage(Chat.color(msg, player));
                 return true;
@@ -138,9 +141,9 @@ public class ReputationCommand implements CommandExecutor {
      * @return true if time is up, false if it isn't
      */
     private boolean TimeIsUp(Player player){
-        if(plugin.getSqliteUtility().getTimestamp(player) == 0) return true;
+        if(PlayerReputationManager.getPlayerReputationManager(player).getPlayerTimestamp() == 0) return true;
         long currentTime = System.currentTimeMillis();
-        long totalTime = plugin.getSqliteUtility().getTimestamp(player);
+        long totalTime = PlayerReputationManager.getPlayerReputationManager(player).getPlayerTimestamp();
         if(currentTime>=totalTime){
             plugin.getSqliteUtility().createTimestamp(player, 0L);
             return true;

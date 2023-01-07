@@ -3,13 +3,13 @@ package me.xaxis.reputation;
 import me.xaxis.reputation.commands.ReputationCommand;
 import me.xaxis.reputation.commands.ReputationTabCompleter;
 import me.xaxis.reputation.events.onJoin;
+import me.xaxis.reputation.handle.PlayerReputationManager;
 import me.xaxis.reputation.handle.SqliteUtility;
 import me.xaxis.reputation.papi.Reputation;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.UUID;
 import java.util.logging.Level;
 
 public final class ReputationMain extends JavaPlugin {
@@ -42,6 +42,14 @@ public final class ReputationMain extends JavaPlugin {
         new Reputation(this).register();
         getCommand("reputation").setTabCompleter(new ReputationTabCompleter());
         new onJoin(this);
+
+        getServer().getScheduler().runTaskLater(this, ()->{
+            for(Player player : getServer().getOnlinePlayers()){
+                new PlayerReputationManager(player, this);
+            }
+        },7);
+
+        getLogger().log(Level.INFO, "Successfully cached player data!");
 
     }
 

@@ -16,7 +16,6 @@ public class SqliteUtility {
     private static String URL;
     private final Plugin plugin;
     private Connection connection;
-    private DatabaseMetaData meta;
 
     public SqliteUtility(ReputationMain plugin){
 
@@ -321,9 +320,6 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()-> {
             try {
                 this.connection = DriverManager.getConnection(URL);
-                if(this.connection != null){
-                    this.meta = connection.getMetaData();
-                }
             } catch (SQLException e) {
                 throw new RuntimeException("Unable to create a database",e);
             }

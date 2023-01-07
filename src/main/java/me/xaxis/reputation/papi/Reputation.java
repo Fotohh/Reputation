@@ -2,14 +2,13 @@ package me.xaxis.reputation.papi;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.xaxis.reputation.ReputationMain;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.ConfigurationSection;
+import me.xaxis.reputation.handle.PlayerReputationManager;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
+import java.util.List;
 
 @SuppressWarnings("all")
 public class Reputation extends PlaceholderExpansion {
@@ -36,56 +35,36 @@ public class Reputation extends PlaceholderExpansion {
     }
 
     @Override
+    public @NotNull List<String> getPlaceholders() {
+        List<String> list = new ArrayList<>();
+        list.add("total");
+        list.add("likes");
+        list.add("dislikes");
+        list.add("percentage");
+        list.add("color");
+        return list;
+    }
+
+    @Override
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         if(player == null) return "";
+        PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(player);
+
         switch (params){
             case "total"->{
-                return String.valueOf(plugin.getSqliteUtility().getTotalReputation(player));
+                return String.valueOf(info.getTotal());
             }
             case "likes"->{
-                return String.valueOf(plugin.getSqliteUtility().getLikes(player));
+                return String.valueOf(info.getLikes());
             }
             case "dislikes"->{
-                return String.valueOf(plugin.getSqliteUtility().getDislikes(player));
+                return String.valueOf(info.getDislikes());
             }
             case "percentage"->{
-                return String.valueOf(plugin.getSqliteUtility().getRatio(player));
+                return String.valueOf(info.getPercentage());
             }
             case "color"->{
-
-                ConfigurationSection section = plugin.getConfig().getConfigurationSection("thresholds");
-
-                ArrayList<Integer> values = new ArrayList<>();
-
-                int reputation = plugin.getSqliteUtility().getTotalReputation(player);
-
-                for(String s : section.getKeys(false)){
-                    try{
-                        int a = Integer.parseInt(s);
-                        values.add(a);
-                    }catch (Exception e){
-                        plugin.getLogger().log(Level.SEVERE, "Critical Error! Unable to register placeholder color!" +
-                                "\nSeems that you formatted the identifiers in the section thresholds incorrectly...");
-                    }
-                }
-
-                if(values.isEmpty()){
-                    plugin.getLogger().log(Level.SEVERE, "ArrayList<Integer> values >> has no values! Contact developer with this error code: AHNC1");
-                    return null;
-                }
-
-                for(int i = 0; i < values.size(); i++){
-
-                    if(values.size() < 2) return section.getString(String.valueOf(values.get(i)));
-
-                    if(reputation > values.get(i) && values.size() - 1 == i) return section.getString(String.valueOf(values.get(i)));
-
-                    if(reputation > values.get(i) && reputation < values.get(i+1)) return section.getString(String.valueOf(values.get(i)));
-
-                }
-
-                return "Error! Code: WNATFC | Send this to the developer!";
-
+                return String.valueOf(info.getColor());
             }
         }
         return "Error! Code: NSFFPH | Send this to the developer!";

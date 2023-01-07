@@ -63,25 +63,15 @@ public final class ReputationMain extends JavaPlugin {
 
     @Override
     public void onDisable() {
-
-        getLogger().log(Level.INFO, "Saving Player Data...");
-
-        getServer().getScheduler().runTaskAsynchronously(this, this::savePlayerDataToSqlite);
-
-        getServer().getScheduler().runTaskLaterAsynchronously(this, ()->{
-            getLogger().log(Level.INFO,"Disconnecting from Sqlite database");
-            try {
-                sqliteUtility.disconnect();
-            } catch (SQLException e) {
-                getLogger().log(Level.SEVERE, "Unable to disconnect from SQLite Server");
-            }
-        },2);
-
+        shutdown();
     }
 
-    private void savePlayerDataToSqlite(){
-        for (UUID uuid : PlayerReputationManager.getMap().keySet()){
-            PlayerReputationManager.getPlayerReputationManager(uuid).saveData();
+    private void shutdown(){
+        getLogger().log(Level.INFO,"Disconnecting from Sqlite database");
+        try {
+            sqliteUtility.disconnect();
+        } catch (SQLException e) {
+            getLogger().log(Level.SEVERE, "Unable to disconnect from SQLite Server");
         }
     }
 }

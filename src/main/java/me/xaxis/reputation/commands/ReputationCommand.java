@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -66,11 +65,10 @@ public class ReputationCommand implements CommandExecutor {
                 player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin).replace("%player_name_offline%",args[0]), target));
                 return true;
             }
-
-            PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(target.getUniqueId());
+            PlayerReputationManager m = PlayerReputationManager.getPlayerReputationManager(target.getUniqueId());
 
             if(!TimeIsUp(player)){
-                long timeInSeconds = Math.abs(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - info.getPlayerTimestamp()));
+                long timeInSeconds = Math.abs((System.currentTimeMillis() - m.getPlayerTimestamp()));
                 String msg = Lang.PLAYER_CMD_TIMEOUT.getMsg(plugin).replace("%time_left%",new Date(timeInSeconds).toString());
                 player.sendMessage(Chat.color(msg, player));
                 return true;
@@ -80,11 +78,11 @@ public class ReputationCommand implements CommandExecutor {
 
             switch (args[1]){
                 case "like" ->{
-                    info.setLikes(info.getLikes()+plugin.getConfig().getInt("like_amt"));
+                    plugin.getSqliteUtility().addLike(target.getUniqueId(), plugin.getConfig().getInt("like_amt"));
                     player.sendMessage(Chat.color(Lang.LIKED_PLAYER.getMsg(plugin),target));
                 }
                 case "dislike" ->{
-                    info.setDislikes(info.getDislikes()+plugin.getConfig().getInt("dislike_amt"));
+                    plugin.getSqliteUtility().addDislike(target.getUniqueId(), plugin.getConfig().getInt("dislike_amt"));
                     player.sendMessage(Chat.color(Lang.DISLIKED_PLAYER.getMsg(plugin), target));
                 }
             }
@@ -100,8 +98,6 @@ public class ReputationCommand implements CommandExecutor {
                 return true;
             }
 
-            PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(target.getUniqueId());
-
             int amount;
             try{
                 amount = Integer.parseInt(args[3]);
@@ -113,12 +109,12 @@ public class ReputationCommand implements CommandExecutor {
 
             switch (args[2]){
                 case "like"->{
-                    info.setLikes(amount);
+                    plugin.getSqliteUtility().setLikes(target.getUniqueId(), amount);
                     String msg = Lang.SET_PLAYER_LIKES.getMsg(plugin).replace("%amount_integer%",String.valueOf(amount));
                     player.sendMessage(Chat.color(msg,target));
                 }
                 case "dislike"->{
-                    info.setDislikes(amount);
+                    plugin.getSqliteUtility().setDislikes(target.getUniqueId(), amount);
                     String msg = Lang.SET_PLAYER_DISLIKES.getMsg(plugin).replace("%amount_integer%",String.valueOf(amount));
                     player.sendMessage(Chat.color(msg,target));
                 }
@@ -137,11 +133,10 @@ public class ReputationCommand implements CommandExecutor {
     }
 
     private void createPlayerTimestamp(Player player){
-        PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(player.getUniqueId());
         long currentTime = System.currentTimeMillis();
         long waitTime = TimeUnit.SECONDS.toMillis(plugin.getConfig().getLong("execute-cmd-timeout"));
         long totalTime = currentTime+waitTime;
-        info.setTimestamp(totalTime);
+        plugin.getSqliteUtility().setTimestamp(player.getUniqueId(), totalTime);
     }
 
     /**
@@ -149,12 +144,11 @@ public class ReputationCommand implements CommandExecutor {
      * @return true if time is up, false if it isn't
      */
     private boolean TimeIsUp(Player player){
-        PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(player.getUniqueId());
-        if(info.getPlayerTimestamp() == 0) return true;
+        if(PlayerReputationManager.getPlayerReputationManager(player.getUniqueId()).getPlayerTimestamp() == 0) return true;
         long currentTime = System.currentTimeMillis();
         long totalTime = PlayerReputationManager.getPlayerReputationManager(player.getUniqueId()).getPlayerTimestamp();
         if(currentTime>=totalTime){
-            info.setTimestamp(0);
+            plugin.getSqliteUtility().setTimestamp(player.getUniqueId(), 0L);
             return true;
         }else return false;
     }

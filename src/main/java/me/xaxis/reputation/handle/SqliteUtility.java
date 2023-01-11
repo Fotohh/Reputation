@@ -81,7 +81,7 @@ public class SqliteUtility {
     }
 
     public long getTimestamp(UUID uuid) throws SQLException {
-        PlayerReputationManager m = new PlayerReputationManager(uuid,plugin);
+        PlayerReputationManager m = PlayerReputationManager.containsPlayer(uuid) ? PlayerReputationManager.getPlayerReputationManager(uuid) : new PlayerReputationManager(uuid, plugin);
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
@@ -183,7 +183,7 @@ public class SqliteUtility {
 
     public int getLikes(UUID uuid) throws SQLException {
 
-        PlayerReputationManager m = new PlayerReputationManager(uuid,plugin);
+        PlayerReputationManager m = PlayerReputationManager.containsPlayer(uuid) ? PlayerReputationManager.getPlayerReputationManager(uuid) : new PlayerReputationManager(uuid, plugin);
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
@@ -208,7 +208,7 @@ public class SqliteUtility {
 
     public int getDislikes(UUID uuid) throws SQLException {
 
-        PlayerReputationManager m = new PlayerReputationManager(uuid,plugin);
+        PlayerReputationManager m = PlayerReputationManager.containsPlayer(uuid) ? PlayerReputationManager.getPlayerReputationManager(uuid) : new PlayerReputationManager(uuid, plugin);
 
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{

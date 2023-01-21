@@ -48,9 +48,7 @@ public class ReputationCommand implements CommandExecutor {
                 player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin).replace("%player_name_offline%",args[0]), target));
                 return true;
             }
-            PlayerReputationManager info = PlayerReputationManager.getPlayerReputationManager(target.getUniqueId());
             player.sendMessage(Chat.color(Lang.PLAYER_REPUTATION.getMsg(plugin), target));
-            player.sendMessage(info.toString());
 
             return true;
         }

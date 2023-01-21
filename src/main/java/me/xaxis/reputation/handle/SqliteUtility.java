@@ -52,7 +52,7 @@ public class SqliteUtility {
                          uuid text PRIMARY KEY NOT NULL,
                          likes INTEGER,
                          dislikes INTEGER,
-                         plts LONG
+                         plts long
                         );""");
                 stmt.close();
             } catch (SQLException e) {
@@ -85,7 +85,7 @@ public class SqliteUtility {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, ()->{
             try{
                 PreparedStatement stmt = connection.prepareStatement(
-                        "SELECT reputation.plts from reputation where uuid = ?"
+                        "SELECT plts from reputation where uuid = ?"
                 );
                 stmt.setString(1, uuid.toString());
                 ResultSet s = stmt.executeQuery();

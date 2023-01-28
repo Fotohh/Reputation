@@ -129,16 +129,4 @@ public class PlayerReputationManager{
     private void cacheTimestamp() throws SQLException {
         this.timestamp = plugin.getSqliteUtility().getTimestamp(uuid);
     }
-
-    @Override
-    public String toString() {
-        return "PlayerReputationManager{" +
-                "uuid=" + uuid +
-                ", plugin=" + plugin +
-                ", likes=" + likes +
-                ", dislikes=" + dislikes +
-                ", color='" + color + '\'' +
-                ", timestamp=" + timestamp +
-                '}';
-    }
 }

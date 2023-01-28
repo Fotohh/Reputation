@@ -8,7 +8,7 @@ thresholds:
 Lang: #This is all the messages I've done for now...
     SENDER_NOT_PLAYER: 'You must be a player to execute this command!' #Color code not supported for console messages
     PLAYER_IS_INVALID: '&4%player_name_offline% is not online or is invalid!'
-    PLAYER_CMD_TIMEOUT: '&4You still have %time_left% seconds remaining before you can use this command again!'
+    PLAYER_CMD_TIMEOUT: '&4You still have %time_weeks% week(s) %time_days% day(s) %time_hours% hour(s) %time_minutes% minute(s) and %time_seconds% second(s) remaining before you can use this command again!'
     PLAYER_REPUTATION: '&a%player_name%s total reputation is %reputation_total% (%reputation_likes% likes | %reputation_dislikes% dislikes)'
     LIKED_PLAYER: '&aYou have liked %player_name%!'
     DISLIKED_PLAYER: '&cYou have disliked %player_name%'

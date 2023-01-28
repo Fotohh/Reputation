@@ -11,6 +11,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -64,7 +67,13 @@ public class ReputationCommand implements CommandExecutor {
 
             if(!TimeIsUp(player)){
                 long timeInSeconds = Math.abs((System.currentTimeMillis() - m.getPlayerTimestamp()));
-                String msg = Lang.PLAYER_CMD_TIMEOUT.getMsg(plugin).replace("%time_left%",new Date(timeInSeconds).toString());
+                Duration duration = Duration.between(new Date(System.currentTimeMillis()).toInstant(),new Date(timeInSeconds).toInstant());
+                String msg = Lang.PLAYER_CMD_TIMEOUT.getMsg(plugin)
+                        .replace( "%time_weeks%", String.valueOf(Math.abs( duration.get(ChronoUnit.WEEKS)) ) )
+                            .replace("%time_days%",String.valueOf(Math.abs(duration.get(ChronoUnit.DAYS))))
+                                .replace("%time_hours%",String.valueOf(Math.abs(duration.get(ChronoUnit.HOURS))))
+                                    .replace("%time_minutes%",String.valueOf(Math.abs(duration.get(ChronoUnit.MINUTES))))
+                                        .replace("%time_seconds%",String.valueOf(Math.abs(duration.get(ChronoUnit.SECONDS))));
                 player.sendMessage(Chat.color(msg, player));
                 return true;
             }

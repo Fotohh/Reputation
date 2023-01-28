@@ -20,10 +20,6 @@ public class PlayerReputationManager{
 
     private static final HashMap<UUID,PlayerReputationManager> map = new HashMap<>();
 
-    public static HashMap<UUID, PlayerReputationManager> getMap() {
-        return map;
-    }
-
     public static PlayerReputationManager getPlayerReputationManager(UUID uuid){
         return map.get(uuid);
     }

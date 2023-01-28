@@ -38,12 +38,6 @@ public class PlayerReputationManager{
         map.putIfAbsent(uuid, this);
     }
 
-    public void saveData(){
-        plugin.getSqliteUtility().setDislikes(uuid,dislikes);
-        plugin.getSqliteUtility().setLikes(uuid,likes);
-        plugin.getSqliteUtility().setTimestamp(uuid,timestamp);
-    }
-
     public void setDislikes(int dislikes) {
         this.dislikes = dislikes;
     }

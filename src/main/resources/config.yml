@@ -9,12 +9,14 @@ Lang: #This is all the messages I've done for now...
     SENDER_NOT_PLAYER: 'You must be a player to execute this command!' #Color code not supported for console messages
     PLAYER_IS_INVALID: '&4%player_name_offline% is not online or is invalid!'
     PLAYER_CMD_TIMEOUT: '&4You still have %time_weeks% week(s) %time_days% day(s) %time_hours% hour(s) %time_minutes% minute(s) and %time_seconds% second(s) remaining before you can use this command again!'
-    PLAYER_REPUTATION: '&a%player_name%s total reputation is %reputation_total% (%reputation_likes% likes | %reputation_dislikes% dislikes)'
+    PLAYER_REPUTATION: "&a%player_name%'s total reputation is %reputation_total% (%reputation_likes% likes | %reputation_dislikes% dislikes)"
     LIKED_PLAYER: '&aYou have liked %player_name%!'
     DISLIKED_PLAYER: '&cYou have disliked %player_name%'
     ARGUMENT_NOT_NUMBER: '&4Argument must be a number! Found: %argument_text%'
-    SET_PLAYER_LIKES: '&aSuccessfully set %player_name%s likes to %amount_integer%'
-    SET_PLAYER_DISLIKES: '&aSuccessfully set %player_name%s dislikes to %amount_integer%'
+    SET_PLAYER_LIKES: "&aSuccessfully set %player_name%'s likes to %amount_integer%"
+    SET_PLAYER_DISLIKES: "&aSuccessfully set %player_name%'s dislikes to %amount_integer%"
     INVALID_USAGE: '&4Invalid Usage!'
+    CANNOT_LIKE_SELF: '&4You cannot like yourself!'
+    CANNOT_DISLIKE_SELF: '&4You cannot dislike yourself!'
     NO_PERMISSION: '&4You do not have the required permissions to execute this command!'
 execute-cmd-timeout: 30 #In seconds

@@ -11,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.SQLException;
-import java.util.UUID;
 import java.util.logging.Level;
 
 public final class ReputationMain extends JavaPlugin {

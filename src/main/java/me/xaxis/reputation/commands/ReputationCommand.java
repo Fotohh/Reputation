@@ -41,8 +41,7 @@ public class ReputationCommand implements CommandExecutor {
 
 
         if(args.length == 0){
-            //TODO This will be a help cmd
-
+            player.sendMessage(Chat.color(Lang.INVALID_USAGE.getMsg(plugin), player));
             return true;
         }
         if(args.length == 1){
@@ -63,6 +62,7 @@ public class ReputationCommand implements CommandExecutor {
                 player.sendMessage(Chat.color(Lang.PLAYER_IS_NULL.getMsg(plugin).replace("%player_name_offline%",args[0]), target));
                 return true;
             }
+
             PlayerReputationManager m = PlayerReputationManager.getPlayerReputationManager(target.getUniqueId());
 
             if(!TimeIsUp(player)){
@@ -82,14 +82,24 @@ public class ReputationCommand implements CommandExecutor {
 
             switch (args[1]){
                 case "like" ->{
+                    if(player.getUniqueId().equals(target.getUniqueId())){
+                        player.sendMessage(Chat.color(Lang.CANNOT_LIKE_SELF.getMsg(plugin), player));
+                    }
                     plugin.getSqliteUtility().addLike(target.getUniqueId(), plugin.getConfig().getInt("like_amt"));
                     player.sendMessage(Chat.color(Lang.LIKED_PLAYER.getMsg(plugin),target));
+                    return true;
                 }
                 case "dislike" ->{
+                    if(player.getUniqueId().equals(target.getUniqueId())){
+                        player.sendMessage(Chat.color(Lang.CANNOT_DISLIKE_SELF.getMsg(plugin), player));
+                    }
                     plugin.getSqliteUtility().addDislike(target.getUniqueId(), plugin.getConfig().getInt("dislike_amt"));
                     player.sendMessage(Chat.color(Lang.DISLIKED_PLAYER.getMsg(plugin), target));
+                    return true;
                 }
             }
+            
+            player.sendMessage(Chat.color(Lang.INVALID_USAGE.getMsg(plugin), player));
 
             return true;
 
@@ -116,13 +126,17 @@ public class ReputationCommand implements CommandExecutor {
                     plugin.getSqliteUtility().setLikes(target.getUniqueId(), amount);
                     String msg = Lang.SET_PLAYER_LIKES.getMsg(plugin).replace("%amount_integer%",String.valueOf(amount));
                     player.sendMessage(Chat.color(msg,target));
+                    return true;
                 }
                 case "dislike"->{
                     plugin.getSqliteUtility().setDislikes(target.getUniqueId(), amount);
                     String msg = Lang.SET_PLAYER_DISLIKES.getMsg(plugin).replace("%amount_integer%",String.valueOf(amount));
                     player.sendMessage(Chat.color(msg,target));
+                    return true;
                 }
             }
+
+            player.sendMessage(Chat.color(Lang.INVALID_USAGE.getMsg(plugin), player));
 
             return true;
 
